@@ -53,6 +53,10 @@ export default function Signin() {
 
         if (response && response.status === 422) {
           setErrors(response.data.errors);
+        } else if (response && response.status === 401) {
+          setErrors({ general: ['Invalid credentials'] });
+        } else {
+          setErrors({ general: ['An error occurred. Please try again.'] });
         }
       });
   }
