@@ -54,15 +54,42 @@ class AuthController extends Controller
     public function login(Request $request)
     {
       
-    $request->validate([
+    // Validate input
+    $validated = $request->validate([
         'email' => 'required|email',
-        'password' => 'required',
+        'password' => 'required|min:3',
     ]);
-     $user = User::where('email', $request->email)->first();
+
+    $user = User::where('email', $request->email)->first();
     
-     if ($user && Hash::check($request->password, $user->password)) {
+    if ($user && Hash::check($request->password, $user->password)) {
         Auth::login($user);
-        return redirect()->intended('users');
+        
+        // Check if it's an AJAX request
+        if ($request->wantsJson()) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token
+                ]
+            ]);
+        }
+        
+        return redirect()->intended('dashboard');
+     }
+     
+     // Check if it's an AJAX request
+     if ($request->wantsJson()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid email or password',
+            'errors' => [
+                'general' => ['Invalid email or password']
+            ]
+        ], 401);
      }
      
      return redirect()->route('dashboard')->with('error', 'Invalid email or password');
