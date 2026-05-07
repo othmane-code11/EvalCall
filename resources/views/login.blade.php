@@ -423,24 +423,128 @@
   /* Error message */
   .error-box {
     display: none;
-    align-items: center;
-    gap: 9px;
-    background: #FDF1F1;
-    border: 1px solid #E8BABA;
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    margin-bottom: 18px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: min(100%, 360px);
+    align-items: stretch;
+    background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+    border: 1.5px solid #B91C1C;
+    border-radius: var(--radius);
+    padding: 14px 16px 10px;
     font-size: 13px;
-    color: #8B2E2E;
-    animation: shake 0.35s ease;
+    color: #FEE2E2;
+    box-shadow: 0 18px 32px rgba(139, 0, 0, 0.24);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-20px) translateX(20px) scale(0.97);
+    transition: opacity 0.25s ease, transform 0.25s ease;
   }
 
-  .error-box.visible { display: flex; }
+  .error-box.visible {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0) translateX(0) scale(1);
+  }
 
-  .error-box svg {
-    width: 16px; height: 16px;
-    stroke: #C04040; stroke-width: 1.8; fill: none;
+  .error-box.hide {
+    opacity: 0;
+    transform: translateY(-16px) translateX(16px) scale(0.98);
+  }
+
+  .error-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.15) 0%, transparent 55%);
+    border-radius: var(--radius);
+    pointer-events: none;
+  }
+
+  .error-box-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .error-icon {
+    width: 20px;
+    height: 20px;
+    stroke: #FEE2E2;
+    stroke-width: 2;
+    fill: none;
     flex-shrink: 0;
+    animation: pulse 0.6s ease-in-out infinite;
+  }
+
+  .error-text {
+    flex: 1;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    line-height: 1.4;
+  }
+
+  .error-close {
+    background: none;
+    border: none;
+    color: #FEE2E2;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .error-close:hover {
+    color: #FFFFFF;
+    transform: scale(1.05);
+  }
+
+  .error-progress {
+    position: relative;
+    height: 4px;
+    width: 100%;
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .error-progress-inner {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 100%);
+    transform-origin: left;
+    transition: transform 5s linear;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 
   /* Login button */
@@ -644,10 +748,13 @@
              @csrf 
         <!-- Error message -->
         <div class="error-box" id="errorBox" role="alert" aria-live="polite">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="#C04040" stroke="none"/>
+          <svg class="error-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <circle cx="12" cy="16" r="0.5" fill="#C04040" stroke="none"/>
           </svg>
-          <span id="errorMsg">Adresse e-mail ou mot de passe incorrect. Veuillez réessayer.</span>
+          <span class="error-text" id="errorMsg">Adresse e-mail ou mot de passe incorrect. Veuillez réessayer.</span>
+          <button type="button" class="error-close" id="errorClose" aria-label="Fermer l'alerte">✕</button>
         </div>
 
         <div class="field-group">
@@ -747,38 +854,118 @@
     pwToggle.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
   });
 
-  // Form submission demo — show error on wrong creds
+  // Email validation function
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // Password validation function
+  function isValidPassword(password) {
+    return password && password.trim().length >= 3;
+  }
+
+  // Form submission with AJAX
   const form     = document.getElementById('loginForm');
   const errorBox = document.getElementById('errorBox');
   const errorMsg = document.getElementById('errorMsg');
+  const errorClose = document.getElementById('errorClose');
+
+  // Close button functionality
+  errorClose.addEventListener('click', (e) => {
+    e.preventDefault();
+    errorBox.classList.remove('visible');
+  });
 
   form.addEventListener('submit', (e) => {
+    e.preventDefault();
     errorBox.classList.remove('visible');
 
     const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    const password = document.getElementById('password').value.trim();
     const btn      = document.getElementById('loginBtn');
 
-    if (!email || !password) {
-      errorMsg.textContent = 'Veuillez saisir votre adresse e-mail et votre mot de passe.';
+    // Client-side validation
+    if (!email) {
+      errorMsg.textContent = 'Veuillez saisir votre adresse e-mail.';
       errorBox.classList.add('visible');
       return;
     }
 
-    // Simulate loading
+    if (!isValidEmail(email)) {
+      errorMsg.textContent = 'Veuillez entrer une adresse e-mail valide.';
+      errorBox.classList.add('visible');
+      return;
+    }
+
+    if (!password) {
+      errorMsg.textContent = 'Veuillez saisir votre mot de passe.';
+      errorBox.classList.add('visible');
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      errorMsg.textContent = 'Le mot de passe doit contenir au moins 3 caractères.';
+      errorBox.classList.add('visible');
+      return;
+    }
+
+    // Show loading state
     btn.style.opacity = '0.7';
     btn.style.pointerEvents = 'none';
     btn.querySelector('span').textContent = 'Connexion en cours…';
 
-    setTimeout(() => {
+    // Get CSRF token
+    const csrfToken = document.querySelector('input[name="_token"]').value;
+
+    // Send AJAX request
+    fetch('/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else if (response.status === 401) {
+        return response.json().then(data => {
+          throw new Error('Identifiants invalides. Veuillez vérifier votre e-mail et votre mot de passe.');
+        });
+      } else if (response.status === 422) {
+        return response.json().then(data => {
+          throw new Error('' + Object.values(data.errors)[0][0]);
+        });
+      } else {
+        throw new Error('⚠️ Une erreur est survenue. Veuillez réessayer.');
+      }
+    })
+    .then(data => {
+      // Success - redirect to dashboard
+      if (data.success) {
+        window.location.href = '/users';
+      }
+    })
+    .catch(error => {
+      // Reset button state
       btn.style.opacity = '';
       btn.style.pointerEvents = '';
       btn.querySelector('span').textContent = 'Se connecter';
-      errorMsg.textContent = 'Adresse e-mail ou mot de passe incorrect. Veuillez réessayer.';
+      
+      // Show error
+      errorMsg.textContent = error.message;
       errorBox.classList.add('visible');
+      
+      // Clear password field
       document.getElementById('password').value = '';
       document.getElementById('password').focus();
-    }, 1400);
+    });
   });
 
   // Hide error on input change
