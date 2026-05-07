@@ -19,7 +19,9 @@ class AuthController extends Controller
     }
     public function users()
     {
-        return view('users');
+        $users = User::all();
+
+        return view('users', compact('users'));
     }
     public function evaluations()
     {
@@ -46,6 +48,8 @@ class AuthController extends Controller
 
         return redirect()->route('users')->with('success', 'User created successfully.');
     }
+
+
     public function login(Request $request)
     {
       

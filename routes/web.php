@@ -15,3 +15,10 @@ Route::post('/create-user',[AuthController::class,'createUser'])->name('create.u
 route::get('/settings', function () {
     return view('settings');
 })->name('settings');
+route::get('/dashboard1', function () {
+    return view('dashboard1');
+})->name('dashboard1');
+
+route::get('/d2', function () {
+    return view('d2');
+})->name('d2');
