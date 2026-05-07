@@ -1115,83 +1115,28 @@
         </thead>
         <tbody id="usersBody">
 
-          <tr data-name="Youssef El Amrani" data-role="conseiller" data-status="actif">
+          @foreach($users as $user)
+          <tr data-name="{{ $user->name }}" data-role="{{ $user->role }}" data-status="actif">
             <td>
               <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#C0152A,#F5A623)">YA</div>
+                <div class="user-av" style="background:#C0152A">{{ substr($user->first_name, 0, 1) }}{{ substr($user->last_name, 0, 1) }}</div>
                 <div>
-                  <div class="user-name">Youssef El Amrani</div>
-                  <div class="user-email">y.elamrani@kiteacall.com</div>
+                  <div class="user-name">{{ $user->first_name }} {{ $user->last_name }}</div>
+                  <div class="user-email">{{ $user->email }}</div>
                 </div>
               </div>
             </td>
-            <td><span class="role-badge-pill role-conseiller">Conseiller</span></td>
+            <td><span class="role-badge-pill role-{{ $user->role }}">{{ ucfirst($user->role) }}</span></td>
             <td><span class="status-pill status-active">● Actif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">12 Jan 2026</td>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;">42</td>
-            <td>
-              <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:1,first:'Youssef',last:'El Amrani',email:'y.elamrani@kiteacall.com',role:'conseiller'})">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>Modifier</span>
-                </button>
-                <button class="btn-delete" onclick="openDeleteModal(1,'Youssef El Amrani')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr data-name="Fatima Zahra Idrissi" data-role="conseiller" data-status="actif">
-            <td>
-              <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#6B3040,#C0152A)">FI</div>
-                <div>
-                  <div class="user-name">Fatima Zahra Idrissi</div>
-                  <div class="user-email">fz.idrissi@kiteacall.com</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="role-badge-pill role-conseiller">Conseiller</span></td>
-            <td><span class="status-pill status-active">● Actif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">18 Jan 2026</td>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;">38</td>
-            <td>
-              <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:2,first:'Fatima Zahra',last:'Idrissi',email:'fz.idrissi@kiteacall.com',role:'conseiller'})">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>Modifier</span>
-                </button>
-                <button class="btn-delete" onclick="openDeleteModal(2,'Fatima Zahra Idrissi')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr data-name="Karim Mansouri" data-role="manager" data-status="actif">
-            <td>
-              <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#D4900A,#F5A623)">KM</div>
-                <div>
-                  <div class="user-name">Karim Mansouri</div>
-                  <div class="user-email">k.mansouri@kiteacall.com</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="role-badge-pill role-manager">Manager</span></td>
-            <td><span class="status-pill status-active">● Actif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">03 Nov 2025</td>
+            <td style="color:var(--text-muted);font-size:12.5px">{{ $user->created_at->format('d M Y') }}</td>
             <td style="font-family:'Syne',sans-serif;font-weight:700;">—</td>
             <td>
               <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:3,first:'Karim',last:'Mansouri',email:'k.mansouri@kiteacall.com',role:'manager'})">
+                <button class="btn-edit" onclick="openEditModal({id:{{ $user->id }},first:'{{ $user->first_name }}',last:'{{ $user->last_name }}',email:'{{ $user->email }}',role:'{{ $user->role }}'})">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   <span>Modifier</span>
                 </button>
-                <button class="btn-delete" onclick="openDeleteModal(3,'Karim Mansouri')">
+                <button class="btn-delete" onclick="openDeleteModal({{ $user->id }},'{{ $user->name }}')">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   <span>Supprimer</span>
                 </button>
@@ -1199,89 +1144,7 @@
             </td>
           </tr>
 
-          <tr data-name="Mehdi Benali" data-role="conseiller" data-status="actif">
-            <td>
-              <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#7A8C72,#5a6e53)">MB</div>
-                <div>
-                  <div class="user-name">Mehdi Benali</div>
-                  <div class="user-email">m.benali@kiteacall.com</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="role-badge-pill role-conseiller">Conseiller</span></td>
-            <td><span class="status-pill status-active">● Actif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">25 Feb 2026</td>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;">31</td>
-            <td>
-              <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:4,first:'Mehdi',last:'Benali',email:'m.benali@kiteacall.com',role:'conseiller'})">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>Modifier</span>
-                </button>
-                <button class="btn-delete" onclick="openDeleteModal(4,'Mehdi Benali')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr data-name="Nadia Chraibi" data-role="conseiller" data-status="inactif">
-            <td>
-              <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#9C7078,#6B3040)">NC</div>
-                <div>
-                  <div class="user-name">Nadia Chraibi</div>
-                  <div class="user-email">n.chraibi@kiteacall.com</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="role-badge-pill role-conseiller">Conseiller</span></td>
-            <td><span class="status-pill status-inactive">○ Inactif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">10 Mar 2026</td>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;">27</td>
-            <td>
-              <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:5,first:'Nadia',last:'Chraibi',email:'n.chraibi@kiteacall.com',role:'conseiller'})">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>Modifier</span>
-                </button>
-                <button class="btn-delete" onclick="openDeleteModal(5,'Nadia Chraibi')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <tr data-name="Sarah Alaoui" data-role="admin" data-status="actif">
-            <td>
-              <div class="user-cell">
-                <div class="user-av" style="background:linear-gradient(135deg,#8B0000,#C0152A)">SA</div>
-                <div>
-                  <div class="user-name">Sarah Alaoui</div>
-                  <div class="user-email">s.alaoui@kiteacall.com</div>
-                </div>
-              </div>
-            </td>
-            <td><span class="role-badge-pill role-admin">Admin</span></td>
-            <td><span class="status-pill status-active">● Actif</span></td>
-            <td style="color:var(--text-muted);font-size:12.5px">01 Oct 2025</td>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;">—</td>
-            <td>
-              <div class="table-actions" style="justify-content:flex-end">
-                <button class="btn-edit" onclick="openEditModal({id:6,first:'Sarah',last:'Alaoui',email:'s.alaoui@kiteacall.com',role:'admin'})">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  <span>Modifier</span>
-                </button>
-                <button class="btn-delete" onclick="openDeleteModal(6,'Sarah Alaoui')">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  <span>Supprimer</span>
-                </button>
-              </div>
-            </td>
-          </tr>
+          @endforeach
 
         </tbody>
       </table>
@@ -1609,3 +1472,24 @@
 @endpush
 
 @endsection
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.users-search input');
+    const tableBody = document.getElementById('usersBody');
+    const rows = tableBody.querySelectorAll('tr');
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        rows.forEach(row => {
+            const name = row.querySelector('.user-name').textContent.toLowerCase();
+            const email = row.querySelector('.user-email').textContent.toLowerCase();
+            if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
