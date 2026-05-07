@@ -10,9 +10,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard',[AuthController::class,'dashboard'])->name('dashboard');
     Route::get('/users',[AuthController::class,'users'])->name('users');
     Route::post('/create-user',[AuthController::class,'createUser'])->name('create.user');
+    Route::put('/users/{id}', [AuthController::class, 'updateUser'])->name('users.update');
     Route::delete('/users/{id}', [AuthController::class, 'deleteUser'])->name('users.destroy');
     Route::get('/evaluations',[AuthController::class,'evaluations'])->name('evaluations');
+    Route::post('/logout',[AuthController::class,'logout'])->name('logout');
+    Route::get('/conseillers', function () { 
+        return view('conseiller-dashboard');
+    })->name('conseillers');
+    
 });
+
+
+
 
 route::get('/settings', function () {
     return view('settings');

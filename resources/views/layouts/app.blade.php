@@ -43,6 +43,37 @@
   /* ═══════════════════════════════════════
      SIDEBAR
   ═══════════════════════════════════════ */
+  .logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-top: 6px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: rgba(192,21,42,0.25);
+  color: rgba(255,255,255,0.85);
+}
+
+.logout-btn svg {
+  opacity: 0.6;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.logout-btn:hover svg {
+  opacity: 1;
+}
+  
+  
   .sidebar {
     position: fixed;
     top: 0; left: 0; bottom: 0;
@@ -1029,7 +1060,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{ request()->routeIs('evaluations') ? 'active' : '' }}" href="#">
+      <a class="nav-link {{ request()->routeIs('evaluations') ? 'active' : '' }}" href="/evaluations">
         <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
@@ -1046,7 +1077,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{ request()->routeIs('reports') ? 'active' : '' }}" href="#">
+      <a class="nav-link {{ request()->routeIs('reports') ? 'active' : '' }}" href="/reports">
         <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </svg>
@@ -1054,7 +1085,7 @@
       </a>
     </li>
     <li class="nav-item" style="margin-top:8px">
-      <a class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }}" href="#">
+      <a class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }}" href="/settings">
         <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -1063,19 +1094,30 @@
       </a>
     </li>
   </ul>
-
   <div class="sidebar-footer">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar">KM</div>
-      <div class="sidebar-user-info">
-        <div class="sidebar-user-name">Karim Mansouri</div>
-        <div class="sidebar-user-role">Manager · Team A</div>
-      </div>
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
-      </svg>
+  <div class="sidebar-user">
+    <div class="sidebar-avatar">{{ substr(auth()->user()->first_name, 0, 1) }}{{ substr(auth()->user()->last_name, 0, 1) }}</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name">{{ auth()->user()->name }}</div>
+      <div class="sidebar-user-role">{{ auth()->user()->role }}</div>
     </div>
+    <a href="{{ route('logout') }}"
+       onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+       title="Logout"
+       style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:7px; color:rgba(255,255,255,0.3); text-decoration:none; transition:var(--transition); flex-shrink:0;"
+       onmouseenter="this.style.background='rgba(192,21,42,0.3)'; this.style.color='rgba(255,255,255,0.85)';"
+       onmouseleave="this.style.background='transparent'; this.style.color='rgba(255,255,255,0.3)';">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+      </svg>
+    </a>
   </div>
+
+  <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+    @csrf
+  </form>
+</div>
+
 </aside>
 
 <!-- TOPBAR -->
@@ -1101,10 +1143,10 @@
     </button>
     <div class="topbar-divider"></div>
     <div class="topbar-profile">
-      <div class="topbar-avatar">KM</div>
+      <div class="topbar-avatar">{{ substr(auth()->user()->first_name, 0, 1) }}{{ substr(auth()->user()->last_name, 0, 1) }}</div>
       <div class="topbar-profile-info">
-        <span class="topbar-profile-name">Karim M.</span>
-        <span class="role-badge">Manager</span>
+        <span class="topbar-profile-name">{{ auth()->user()->name }}</span>
+        <span class="role-badge">{{ auth()->user()->role }}</span>
       </div>
     </div>
   </div>

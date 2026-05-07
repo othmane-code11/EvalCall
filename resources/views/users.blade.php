@@ -803,7 +803,7 @@
   /* Edit modal role cards (compact) */
   .edit-role-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
-  /* ─── Responsive ─── */
+
   @media (max-width: 1100px) { .form-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
     .users-section-header { flex-direction: column; align-items: flex-start; }
@@ -1193,21 +1193,17 @@
 
 {{-- ══ EDIT USER MODAL ══ --}}
 <div class="edit-modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
-  <div class="edit-modal-box">
+  <div class="card edit-modal-box">
 
-    <div class="edit-modal-header">
-      <div class="edit-modal-title">
-        <div class="edit-modal-title-icon">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-        </div>
-        Modifier l'utilisateur
+    <div class="card-header edit-modal-header">
+      <div>
+        <div class="card-title">Modifier l'utilisateur</div>
+        <div class="card-subtitle">Mettez à jour les informations du compte</div>
       </div>
       <button class="modal-close-btn" onclick="closeEditModal()">×</button>
     </div>
 
-    <div class="edit-modal-body">
+    <div class="form-body edit-modal-body">
 
       {{-- Avatar preview --}}
       <div class="avatar-preview-wrap" style="margin-bottom:20px">
