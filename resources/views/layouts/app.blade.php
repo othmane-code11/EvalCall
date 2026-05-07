@@ -26,7 +26,7 @@
     --radius:       14px;
     --radius-sm:    8px;
     --shadow-card:  0 2px 16px rgba(139,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
-    --shadow-hover: 0 8px 32px rgba(139,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-hover: 0 8px 32px rgba(123, 74, 74, 0.14), 0 2px 8px rgba(0,0,0,0.06);
     --transition:   all 0.25s cubic-bezier(0.4,0,0.2,1);
   }
 
@@ -1084,8 +1084,8 @@
     <span></span><span></span><span></span>
   </div>
   <div class="topbar-title">
-    <h1>Performance Dashboard</h1>
-    <p>Wednesday, 6 May 2026 &nbsp;·&nbsp; Week 19</p>
+    <h1>@yield('topbar_title', 'Performance Dashboard')</h1>
+    <p>@yield('topbar_subtitle', 'Wednesday, 6 May 2026 · Week 19')</p>
   </div>
   <div class="topbar-actions">
     <button class="topbar-btn" title="Search">

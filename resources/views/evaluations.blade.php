@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Evaluation — EvalCall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --walnut:       #8B0000;
+    --walnut-mid:   #C0152A;
+    --walnut-light: #D93848;
+    --bg:           #FAFAFA;
+    --white:        #FFFFFF;
+    --cream:        #FFF5F5;
+    --cream-deep:   #FFE8EA;
+    --gold:         #F5A623;
+    --gold-light:   #F7BC54;
+    --sage:         #7A8C72;
+    --text-dark:    #1A0A0C;
+    --text-mid:     #6B3040;
+    --text-muted:   #9C7078;
+    --sidebar-w:    260px;
+    --topbar-h:     68px;
+    --radius:       14px;
+    --radius-sm:    8px;
+    --shadow-card:  0 2px 16px rgba(139,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 32px rgba(139,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+    --transition:   all 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: linear-gradient(160deg, #1A0204 0%, #2D0008 40%, #3D0010 70%, #280008 100%);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+  }
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(245,166,35,0.3) 30%, rgba(245,166,35,0.15) 70%, transparent);
+  }
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--walnut-mid), var(--gold));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(245,166,35,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-icon::after {
+    content: '';
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 28px; height: 28px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .sidebar-divider {
+    height: 1px;
+    margin: 4px 20px 16px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+  }
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    padding: 0 24px 8px;
+  }
+  .nav-list { list-style: none; padding: 0 12px; flex: 1; }
+  .nav-item { margin-bottom: 2px; position: relative; }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+  }
+  .nav-link:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
+  .nav-link.active {
+    background: linear-gradient(135deg, rgba(192,21,42,0.35) 0%, rgba(245,166,35,0.12) 100%);
+    color: #fff;
+    box-shadow: 0 0 0 1px rgba(245,166,35,0.2) inset;
+  }
+  .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: -12px; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 22px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold-light));
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 12px rgba(245,166,35,0.6);
+  }
+  .nav-icon { width: 20px; height: 20px; opacity: 0.7; flex-shrink: 0; transition: opacity 0.2s; }
+  .nav-link.active .nav-icon, .nav-link:hover .nav-icon { opacity: 1; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--walnut-mid);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .sidebar-footer { padding: 16px 12px 24px; position: relative; }
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .sidebar-user:hover { background: rgba(255,255,255,0.09); }
+  .sidebar-avatar {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--walnut-mid), var(--walnut-light));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  /* ═══ TOPBAR ═══ */
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-w);
+    right: 0;
+    height: var(--topbar-h);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(139,0,0,0.07);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+    z-index: 90;
+    transition: left 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s; }
+  .hamburger:hover { background: var(--cream-deep); }
+  .hamburger span { display: block; width: 20px; height: 2px; background: var(--walnut); border-radius: 2px; transition: var(--transition); }
+  .topbar-title { flex: 1; }
+  .topbar-title h1 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-dark); letter-spacing: -0.3px; }
+  .topbar-title p { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+  .topbar-btn {
+    position: relative;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--cream);
+    border: 1px solid rgba(139,0,0,0.08);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-mid);
+  }
+  .topbar-btn:hover { background: var(--cream-deep); border-color: rgba(139,0,0,0.15); transform: translateY(-1px); }
+  .topbar-btn svg { width: 18px; height: 18px; }
+  .notif-dot {
+    position: absolute;
+    top: 7px; right: 7px;
+    width: 7px; height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 1.5px solid var(--white);
+    animation: pulse 2s infinite;
+  }
+  .topbar-divider { width: 1px; height: 28px; background: rgba(139,0,0,0.1); margin: 0 4px; }
+  .topbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 6px 6px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+  }
+  .topbar-profile:hover { background: var(--cream); border-color: rgba(139,0,0,0.1); }
+  .topbar-avatar {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--walnut-mid), var(--walnut-light));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(192,21,42,0.3);
+  }
+  .topbar-profile-info { display: flex; flex-direction: column; }
+  .topbar-profile-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--cream-deep), #ffd6da);
+    color: var(--walnut-mid);
+    border: 1px solid rgba(192,21,42,0.15);
+  }
+
+  /* ═══ MAIN ═══ */
+  .main {
+    margin-left: var(--sidebar-w);
+    padding-top: var(--topbar-h);
+    min-height: 100vh;
+  }
+  .content {
+    padding: 32px;
+    max-width: 1100px;
+  }
+
+  /* ═══ PAGE HEADER ═══ */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+    animation: fadeUp 0.4s ease both;
+  }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .breadcrumb a:hover { color: var(--walnut-mid); }
+  .breadcrumb-sep { opacity: 0.4; font-size: 10px; }
+  .breadcrumb-current { color: var(--walnut-mid); font-weight: 600; }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    animation: fadeUp 0.4s 0.05s ease both;
+  }
+  .page-header-left h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-dark);
+    letter-spacing: -0.6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .page-header-left h2 .header-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--walnut), var(--walnut-mid));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(139,0,0,0.3);
+  }
+  .page-header-left h2 .header-icon svg { width: 18px; height: 18px; color: #fff; }
+  .page-header-left p { font-size: 13px; color: var(--text-muted); margin-top: 6px; margin-left: 48px; }
+
+  /* ═══ LAYOUT: FORM + STICKY SCORE ═══ */
+  .eval-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .form-stack { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ═══ CARDS ═══ */
+  .eval-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(139,0,0,0.05);
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+  .eval-card:nth-child(1) { animation-delay: 0.1s; }
+  .eval-card:nth-child(2) { animation-delay: 0.15s; }
+  .eval-card:nth-child(3) { animation-delay: 0.2s; }
+  .eval-card:nth-child(4) { animation-delay: 0.25s; }
+
+  .card-header-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(139,0,0,0.05);
+    background: linear-gradient(to right, var(--cream), var(--white));
+  }
+  .card-header-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-header-icon svg { width: 17px; height: 17px; }
+  .card-header-text h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: -0.2px;
+  }
+  .card-header-text p { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+
+  .card-body { padding: 24px; }
+
+  /* ═══ FORM ELEMENTS ═══ */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-row.full { grid-template-columns: 1fr; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .form-label .required {
+    color: var(--walnut-mid);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .form-label .optional {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid rgba(139,0,0,0.12);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--text-dark);
+    transition: var(--transition);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .form-control:focus {
+    border-color: var(--walnut-mid);
+    box-shadow: 0 0 0 3px rgba(192,21,42,0.08);
+    background: var(--white);
+  }
+  .form-control:hover:not(:focus) { border-color: rgba(139,0,0,0.22); }
+  .form-control::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+  .select-wrap { position: relative; }
+  .select-wrap select { padding-right: 36px; cursor: pointer; }
+  .select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 13px; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--text-muted);
+    pointer-events: none;
+    transition: transform 0.2s;
+  }
+  .select-wrap:focus-within::after { border-top-color: var(--walnut-mid); }
+
+  /* ═══ AUDIO UPLOAD ═══ */
+  .upload-zone {
+    border: 2px dashed rgba(139,0,0,0.18);
+    border-radius: 12px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    background: linear-gradient(135deg, #fff9f9, var(--white));
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--walnut-mid);
+    background: var(--cream);
+    box-shadow: 0 4px 20px rgba(139,0,0,0.08);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, rgba(192,21,42,0.08), rgba(245,166,35,0.06));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    transition: var(--transition);
+  }
+  .upload-zone:hover .upload-icon {
+    background: linear-gradient(135deg, rgba(192,21,42,0.14), rgba(245,166,35,0.1));
+    transform: translateY(-2px);
+  }
+  .upload-icon svg { width: 26px; height: 26px; color: var(--walnut-mid); }
+  .upload-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--text-dark); margin-bottom: 6px; }
+  .upload-sub { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+  .upload-sub strong { color: var(--walnut-mid); font-weight: 600; }
+  .upload-formats {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .format-tag {
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--cream-deep);
+    border: 1px solid rgba(139,0,0,0.1);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-mid);
+    letter-spacing: 0.4px;
+  }
+
+  /* File preview */
+  .file-preview {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: var(--cream);
+    border: 1px solid rgba(139,0,0,0.08);
+    align-items: center;
+    gap: 12px;
+  }
+  .file-preview.show { display: flex; }
+  .file-preview-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--walnut), var(--walnut-mid));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .file-preview-icon svg { width: 16px; height: 16px; color: #fff; }
+  .file-preview-info { flex: 1; min-width: 0; }
+  .file-preview-name { font-size: 13px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-preview-size { font-size: 11px; color: var(--text-muted); }
+  .file-remove {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    border: 1px solid rgba(139,0,0,0.12);
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .file-remove:hover { background: var(--walnut-mid); color: #fff; border-color: var(--walnut-mid); }
+  .file-remove svg { width: 13px; height: 13px; }
+
+  /* ═══ EVALUATION GRID ═══ */
+  .eval-section { margin-bottom: 28px; }
+  .eval-section:last-child { margin-bottom: 0; }
+
+  .eval-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--cream), #fff8f8);
+    border: 1px solid rgba(139,0,0,0.07);
+    margin-bottom: 12px;
+  }
+  .eval-section-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .eval-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: -0.1px;
+    flex: 1;
+  }
+  .eval-section-weight {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--white);
+    border: 1px solid rgba(139,0,0,0.08);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .criteria-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .criteria-table thead tr {
+    background: transparent;
+  }
+  .criteria-table th {
+    padding: 6px 12px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(139,0,0,0.06);
+    text-align: left;
+  }
+  .criteria-table th:last-child { text-align: center; }
+  .criteria-table th.score-col { text-align: center; width: 120px; }
+  .criteria-table th.ko-col { text-align: center; width: 70px; }
+
+  .criteria-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(139,0,0,0.04);
+    vertical-align: middle;
+  }
+  .criteria-table tbody tr:last-child td { border-bottom: none; }
+  .criteria-table tbody tr { transition: background 0.15s; }
+  .criteria-table tbody tr:hover { background: rgba(255,245,245,0.7); }
+
+  .criterion-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+  .criterion-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  .score-select-wrap { position: relative; display: flex; justify-content: center; }
+  .score-select {
+    width: 90px;
+    padding: 7px 28px 7px 12px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(139,0,0,0.12);
+    background: var(--white);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-dark);
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: var(--transition);
+    text-align: center;
+  }
+  .score-select:focus {
+    border-color: var(--walnut-mid);
+    box-shadow: 0 0 0 3px rgba(192,21,42,0.08);
+  }
+  .score-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--text-muted);
+    pointer-events: none;
+  }
+
+  /* KO Checkbox */
+  .ko-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .ko-checkbox {
+    position: relative;
+    width: 32px; height: 32px;
+    cursor: pointer;
+  }
+  .ko-checkbox input { display: none; }
+  .ko-box {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(139,0,0,0.15);
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition);
+    font-size: 11px;
+    font-weight: 800;
+    color: transparent;
+    font-family: 'Syne', sans-serif;
+  }
+  .ko-checkbox input:checked + .ko-box {
+    background: var(--walnut);
+    border-color: var(--walnut);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139,0,0,0.3);
+  }
+  .ko-box:hover { border-color: var(--walnut-mid); background: var(--cream); }
+
+  /* ═══ COMMENTS ═══ */
+  textarea.form-control {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.6;
+  }
+  .char-count { font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+
+  /* ═══ SCORE SIDEBAR ═══ */
+  .score-sidebar { position: sticky; top: calc(var(--topbar-h) + 24px); }
+
+  .score-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(139,0,0,0.05);
+    overflow: hidden;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+
+  .score-card-header {
+    background: linear-gradient(135deg, var(--walnut) 0%, var(--walnut-mid) 100%);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card-header::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .score-card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -10px;
+    width: 100px; height: 100px;
+    background: rgba(245,166,35,0.1);
+    border-radius: 50%;
+  }
+  .score-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .score-display {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    color: #fff;
+    letter-spacing: -2px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+  .score-display span {
+    font-size: 20px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0;
+  }
+  .score-gold-bar {
+    margin-top: 14px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.15);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  .score-gold-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 8px rgba(245,166,35,0.5);
+  }
+
+  .score-breakdown { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: var(--cream);
+    border: 1px solid rgba(139,0,0,0.05);
+    transition: var(--transition);
+    cursor: default;
+  }
+  .breakdown-item:hover { background: var(--cream-deep); }
+  .breakdown-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .breakdown-info { flex: 1; min-width: 0; }
+  .breakdown-name { font-size: 11.5px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .breakdown-weight { font-size: 10px; color: var(--text-muted); }
+  .breakdown-score {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-dark);
+    flex-shrink: 0;
+  }
+  .breakdown-score.na { color: var(--text-muted); font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; }
+
+  .score-ko-alert {
+    margin: 0 16px 16px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    background: rgba(139,0,0,0.05);
+    border: 1px solid rgba(139,0,0,0.12);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    display: none;
+  }
+  .score-ko-alert.show { display: flex; }
+  .ko-alert-icon { color: var(--walnut); flex-shrink: 0; margin-top: 1px; }
+  .ko-alert-icon svg { width: 15px; height: 15px; }
+  .ko-alert-text { font-size: 11.5px; color: var(--walnut-mid); font-weight: 600; line-height: 1.4; }
+
+  /* ═══ ACTION BUTTONS ═══ */
+  .actions-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(139,0,0,0.05);
+    padding: 20px;
+    animation: fadeUp 0.5s 0.35s ease both;
+  }
+
+  .actions-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .actions-left { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    text-decoration: none;
+  }
+  .btn svg { width: 15px; height: 15px; }
+
+  .btn-draft {
+    background: var(--white);
+    color: var(--text-mid);
+    border: 1.5px solid rgba(139,0,0,0.15);
+  }
+  .btn-draft:hover {
+    background: var(--cream);
+    border-color: rgba(139,0,0,0.25);
+    color: var(--text-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139,0,0,0.08);
+  }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1.5px solid transparent;
+  }
+  .btn-cancel:hover { background: var(--cream); color: var(--text-mid); border-color: rgba(139,0,0,0.08); }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--walnut) 0%, var(--walnut-mid) 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(139,0,0,0.3);
+  }
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #700000, var(--walnut));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139,0,0,0.4);
+  }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* ═══ PROGRESS BAR TOP ═══ */
+  .form-progress {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.4s 0.08s ease both;
+  }
+  .progress-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .progress-step-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(139,0,0,0.08);
+    overflow: hidden;
+  }
+  .progress-step-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+  .progress-step.done .progress-step-bar-fill { background: var(--sage); width: 100%; }
+  .progress-step.active .progress-step-bar-fill {
+    background: linear-gradient(90deg, var(--walnut-mid), var(--gold));
+    width: 60%;
+  }
+  .progress-step.todo .progress-step-bar-fill { width: 0%; }
+  .progress-step-label { font-size: 10.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.3px; }
+  .progress-step.done .progress-step-label { color: var(--sage); }
+  .progress-step.active .progress-step-label { color: var(--walnut-mid); }
+
+  /* ═══ ANIMATIONS ═══ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+  }
+
+  /* ═══ RESPONSIVE ═══ */
+  @media (max-width: 1100px) {
+    .eval-layout { grid-template-columns: 1fr; }
+    .score-sidebar { position: static; }
+  }
+  @media (max-width: 960px) {
+    :root { --sidebar-w: 260px; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .topbar { left: 0; }
+    .main { margin-left: 0; }
+    .hamburger { display: flex; }
+  }
+  @media (max-width: 700px) {
+    .content { padding: 20px 16px; }
+    .topbar { padding: 0 16px; }
+    .topbar-profile-info { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-row.three { grid-template-columns: 1fr; }
+    .criteria-table { font-size: 12px; }
+    .actions-inner { flex-direction: column; align-items: stretch; }
+    .actions-left { justify-content: center; }
+    .btn-submit { width: 100%; justify-content: center; }
+    .form-progress { display: none; }
+  }
+
+  /* ═══ SIDEBAR OVERLAY ═══ */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,2,4,0.55);
+    z-index: 99;
+    backdrop-filter: blur(2px);
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">EC</div>
+    <span class="logo-text">EvalCall</span>
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="nav-section-label">Main Menu</div>
+  <ul class="nav-list">
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="#">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Evaluations
+        <span class="nav-badge">14</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Users
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Reports
+      </a>
+    </li>
+    <li class="nav-item" style="margin-top:8px">
+      <a class="nav-link" href="#">
+        <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </a>
+    </li>
+  </ul>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">KM</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Karim Mansouri</div>
+        <div class="sidebar-user-role">Manager · Team A</div>
+      </div>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="hamburger" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="topbar-title">
+    <h1>Create Evaluation</h1>
+    <p>Wednesday, 6 May 2026 &nbsp;·&nbsp; Evaluations</p>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" title="Search">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </button>
+    <button class="topbar-btn" title="Notifications">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span class="notif-dot"></span>
+    </button>
+    <div class="topbar-divider"></div>
+    <div class="topbar-profile">
+      <div class="topbar-avatar">KM</div>
+      <div class="topbar-profile-info">
+        <span class="topbar-profile-name">Karim M.</span>
+        <span class="role-badge">Manager</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="main">
+<div class="content">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="#">Dashboard</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="#">Evaluations</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Create New</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2>
+        <div class="header-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        </div>
+        Create Evaluation
+      </h2>
+      <p>Evaluate a call and track advisor performance</p>
+    </div>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="form-progress">
+    <div class="progress-step done">
+      <div class="progress-step-bar"><div class="progress-step-bar-fill"></div></div>
+      <div class="progress-step-label">General Info</div>
+    </div>
+    <div class="progress-step active">
+      <div class="progress-step-bar"><div class="progress-step-bar-fill"></div></div>
+      <div class="progress-step-label">Audio Upload</div>
+    </div>
+    <div class="progress-step todo">
+      <div class="progress-step-bar"><div class="progress-step-bar-fill"></div></div>
+      <div class="progress-step-label">Evaluation Grid</div>
+    </div>
+    <div class="progress-step todo">
+      <div class="progress-step-bar"><div class="progress-step-bar-fill"></div></div>
+      <div class="progress-step-label">Comments</div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="eval-layout">
+
+    <!-- LEFT: FORM STACK -->
+    <div class="form-stack">
+
+      <!-- CARD 1: General Information -->
+      <div class="eval-card">
+        <div class="card-header-strip">
+          <div class="card-header-icon" style="background:rgba(139,0,0,0.08);color:var(--walnut);">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <div class="card-header-text">
+            <h3>General Information</h3>
+            <p>Basic details about the call and advisor</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Advisor (Conseiller) <span class="required">*</span></label>
+              <div class="select-wrap">
+                <select class="form-control">
+                  <option value="" disabled selected>Select an advisor…</option>
+                  <option>Amina Boulahia</option>
+                  <option>Youssef Karimi</option>
+                  <option>Sara El Fassi</option>
+                  <option>Mehdi Tahir</option>
+                  <option>Nadia Oufkir</option>
+                  <option>Hassan Ziani</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type of Call <span class="required">*</span></label>
+              <div class="select-wrap">
+                <select class="form-control">
+                  <option value="" disabled selected>Select type…</option>
+                  <option value="inbound">📥 Entrant (Inbound)</option>
+                  <option value="outbound">📤 Sortant (Outbound)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date <span class="required">*</span></label>
+              <input type="date" class="form-control" value="2026-05-06">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reference <span class="optional">(optional)</span></label>
+              <input type="text" class="form-control" placeholder="e.g. CALL-2026-04821">
+            </div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group">
+              <label class="form-label">Campaign / Team <span class="optional">(optional)</span></label>
+              <div class="select-wrap">
+                <select class="form-control">
+                  <option value="" disabled selected>Select campaign…</option>
+                  <option>Team A – Retention</option>
+                  <option>Team B – Acquisition</option>
+                  <option>Team C – Support</option>
+                  <option>Team D – Collections</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: Audio Upload -->
+      <div class="eval-card">
+        <div class="card-header-strip">
+          <div class="card-header-icon" style="background:rgba(245,166,35,0.1);color:#C07A00;">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+          </div>
+          <div class="card-header-text">
+            <h3>Audio Recording</h3>
+            <p>Upload the call recording for evaluation</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.wma,.flac" id="audioInput" onchange="handleFile(this)">
+            <div class="upload-icon">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+            </div>
+            <div class="upload-title">Drop your audio file here</div>
+            <div class="upload-sub">or <strong>click to browse</strong> from your computer</div>
+            <div class="upload-formats">
+              <span class="format-tag">MP3</span>
+              <span class="format-tag">WAV</span>
+              <span class="format-tag">M4A</span>
+              <span class="format-tag">OGG</span>
+              <span class="format-tag">AAC</span>
+              <span class="format-tag">FLAC</span>
+            </div>
+          </div>
+
+          <!-- File Preview -->
+          <div class="file-preview" id="filePreview">
+            <div class="file-preview-icon">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+            </div>
+            <div class="file-preview-info">
+              <div class="file-preview-name" id="fileName">audio-call.mp3</div>
+              <div class="file-preview-size" id="fileSize">—</div>
+            </div>
+            <button class="file-remove" onclick="removeFile()" title="Remove file">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3: Evaluation Grid -->
+      <div class="eval-card">
+        <div class="card-header-strip">
+          <div class="card-header-icon" style="background:rgba(217,56,72,0.09);color:var(--walnut-light);">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          </div>
+          <div class="card-header-text">
+            <h3>Evaluation Grid</h3>
+            <p>Rate each criterion from 0 to 5 — check KO for critical failures</p>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <!-- Section 1: Communication Quality -->
+          <div class="eval-section">
+            <div class="eval-section-header">
+              <div class="eval-section-dot" style="background:#C0152A;"></div>
+              <div class="eval-section-title">Communication Quality</div>
+              <div class="eval-section-weight">30 pts</div>
+            </div>
+            <table class="criteria-table">
+              <thead>
+                <tr>
+                  <th>Criterion</th>
+                  <th class="score-col">Score (0–5)</th>
+                  <th class="ko-col">KO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Greeting & Introduction</div>
+                    <div class="criterion-desc">Proper opening, company identification, name stated</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Tone & Clarity</div>
+                    <div class="criterion-desc">Voice tone, articulation, speaking pace</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Active Listening</div>
+                    <div class="criterion-desc">Acknowledgment, reformulation, no interruption</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Professional Closing</div>
+                    <div class="criterion-desc">Summary, next steps communicated, proper farewell</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 2: Technical Mastery -->
+          <div class="eval-section">
+            <div class="eval-section-header">
+              <div class="eval-section-dot" style="background:#F5A623;"></div>
+              <div class="eval-section-title">Technical Mastery</div>
+              <div class="eval-section-weight">25 pts</div>
+            </div>
+            <table class="criteria-table">
+              <thead>
+                <tr>
+                  <th>Criterion</th>
+                  <th class="score-col">Score (0–5)</th>
+                  <th class="ko-col">KO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Product Knowledge</div>
+                    <div class="criterion-desc">Accuracy of information provided to client</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Problem Resolution</div>
+                    <div class="criterion-desc">Effectiveness in resolving customer issue</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Script Compliance</div>
+                    <div class="criterion-desc">Adherence to approved call script and procedures</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 3: Client Experience -->
+          <div class="eval-section">
+            <div class="eval-section-header">
+              <div class="eval-section-dot" style="background:#7A8C72;"></div>
+              <div class="eval-section-title">Client Experience</div>
+              <div class="eval-section-weight">25 pts</div>
+            </div>
+            <table class="criteria-table">
+              <thead>
+                <tr>
+                  <th>Criterion</th>
+                  <th class="score-col">Score (0–5)</th>
+                  <th class="ko-col">KO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Empathy & Patience</div>
+                    <div class="criterion-desc">Understanding client emotions, no signs of frustration</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Wait Time Handling</div>
+                    <div class="criterion-desc">Proper hold management, updates communicated</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Customer Satisfaction Probe</div>
+                    <div class="criterion-desc">Checked if client needs were fully addressed</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 4: Compliance -->
+          <div class="eval-section">
+            <div class="eval-section-header">
+              <div class="eval-section-dot" style="background:#6B3040;"></div>
+              <div class="eval-section-title">Compliance & Regulations</div>
+              <div class="eval-section-weight">20 pts</div>
+            </div>
+            <table class="criteria-table">
+              <thead>
+                <tr>
+                  <th>Criterion</th>
+                  <th class="score-col">Score (0–5)</th>
+                  <th class="ko-col">KO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Data Privacy (GDPR)</div>
+                    <div class="criterion-desc">No unauthorized data disclosure, consent mentioned</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Authentication Protocol</div>
+                    <div class="criterion-desc">Identity verification completed per procedure</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="criterion-label">Call Recording Notice</div>
+                    <div class="criterion-desc">Client informed that call is being recorded</div>
+                  </td>
+                  <td><div class="score-select-wrap"><select class="score-select" onchange="updateScore()"><option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></td>
+                  <td><div class="ko-wrap"><label class="ko-checkbox"><input type="checkbox" onchange="updateKO(this)"><div class="ko-box">KO</div></label></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CARD 4: Comments -->
+      <div class="eval-card">
+        <div class="card-header-strip">
+          <div class="card-header-icon" style="background:rgba(122,140,114,0.12);color:var(--sage);">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          </div>
+          <div class="card-header-text">
+            <h3>Manager Feedback</h3>
+            <p>Add qualitative comments to support the evaluation score</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">
+              Evaluation Notes <span class="optional">(optional but recommended)</span>
+            </label>
+            <textarea class="form-control" id="commentBox" placeholder="Write your evaluation notes here — highlight strengths, areas for improvement, and any specific observations from the call…" rows="5" onkeyup="countChars()"></textarea>
+            <div class="char-count"><span id="charCount">0</span> / 1000 characters</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="actions-card">
+        <div class="actions-inner">
+          <div class="actions-left">
+            <button class="btn btn-cancel">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              Cancel
+            </button>
+            <button class="btn btn-draft">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              Save as Draft
+            </button>
+          </div>
+          <button class="btn btn-submit">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Submit Evaluation
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /form-stack -->
+
+    <!-- RIGHT: SCORE SIDEBAR -->
+    <div class="score-sidebar">
+      <div class="score-card">
+        <!-- Score Header -->
+        <div class="score-card-header">
+          <div class="score-label">Total Score</div>
+          <div class="score-display" id="totalScore">—<span> / 100</span></div>
+          <div class="score-gold-bar">
+            <div class="score-gold-bar-fill" id="scoreBar"></div>
+          </div>
+        </div>
+
+        <!-- KO Alert -->
+        <div class="score-ko-alert" id="koAlert">
+          <div class="ko-alert-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div class="ko-alert-text" id="koAlertText">1 KO criterion flagged — evaluation may be invalidated</div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="score-breakdown">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">Section Breakdown</div>
+
+          <div class="breakdown-item">
+            <div class="breakdown-dot" style="background:#C0152A;"></div>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Communication</div>
+              <div class="breakdown-weight">Max 30 pts</div>
+            </div>
+            <div class="breakdown-score na" id="score-s1">—</div>
+          </div>
+
+          <div class="breakdown-item">
+            <div class="breakdown-dot" style="background:#F5A623;"></div>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Technical</div>
+              <div class="breakdown-weight">Max 25 pts</div>
+            </div>
+            <div class="breakdown-score na" id="score-s2">—</div>
+          </div>
+
+          <div class="breakdown-item">
+            <div class="breakdown-dot" style="background:#7A8C72;"></div>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Client Experience</div>
+              <div class="breakdown-weight">Max 25 pts</div>
+            </div>
+            <div class="breakdown-score na" id="score-s3">—</div>
+          </div>
+
+          <div class="breakdown-item">
+            <div class="breakdown-dot" style="background:#6B3040;"></div>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Compliance</div>
+              <div class="breakdown-weight">Max 20 pts</div>
+            </div>
+            <div class="breakdown-score na" id="score-s4">—</div>
+          </div>
+        </div>
+
+        <!-- Completion status -->
+        <div style="padding:0 16px 16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Completion</div>
+          <div style="height:6px;border-radius:3px;background:rgba(139,0,0,0.08);overflow:hidden;">
+            <div id="completionBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--sage),#9cb394);border-radius:3px;transition:width 0.6s ease;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:5px;">
+            <div style="font-size:11px;color:var(--text-muted);" id="completionText">0 of 13 criteria rated</div>
+            <div style="font-size:11px;font-weight:700;color:var(--sage);" id="completionPct">0%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /score-sidebar -->
+
+  </div><!-- /eval-layout -->
+
+</div><!-- /content -->
+</main>
+
+<script>
+  // Sidebar toggle
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+
+  // Nav active
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+      if (window.innerWidth <= 960) toggleSidebar();
+    });
+  });
+
+  // File upload
+  function handleFile(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    document.getElementById('fileName').textContent = file.name;
+    const size = file.size < 1024*1024
+      ? (file.size/1024).toFixed(1) + ' KB'
+      : (file.size/(1024*1024)).toFixed(1) + ' MB';
+    document.getElementById('fileSize').textContent = size;
+    document.getElementById('filePreview').classList.add('show');
+  }
+
+  function removeFile() {
+    document.getElementById('audioInput').value = '';
+    document.getElementById('filePreview').classList.remove('show');
+  }
+
+  // Drag and drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      document.getElementById('audioInput').files = files;
+      handleFile(document.getElementById('audioInput'));
+    }
+  });
+
+  // Score calculation
+  // Sections: s1=rows 0-3(4 criteria, max 20 pts each×30/20=7.5), s2=4-6, s3=7-9, s4=10-12
+  // Simple: each criterion out of 5, sections weighted
+  const sectionConfig = [
+    { id: 'score-s1', rows: [0,1,2,3], max: 30 },
+    { id: 'score-s2', rows: [4,5,6], max: 25 },
+    { id: 'score-s3', rows: [7,8,9], max: 25 },
+    { id: 'score-s4', rows: [10,11,12], max: 20 },
+  ];
+
+  function updateScore() {
+    const selects = document.querySelectorAll('.score-select');
+    const allSelects = Array.from(selects);
+    let totalPts = 0;
+    let totalMax = 0;
+    let ratedCount = 0;
+
+    sectionConfig.forEach(sec => {
+      let secPts = 0;
+      let secMax = 0;
+      let secRated = 0;
+      sec.rows.forEach(i => {
+        const sel = allSelects[i];
+        const maxPerCrit = sec.max / sec.rows.length;
+        secMax += maxPerCrit;
+        if (sel && sel.value !== '') {
+          secPts += (parseInt(sel.value) / 5) * maxPerCrit;
+          secRated++;
+          ratedCount++;
+        }
+      });
+      const el = document.getElementById(sec.id);
+      if (secRated > 0) {
+        el.textContent = secPts.toFixed(1);
+        el.classList.remove('na');
+        totalPts += secPts;
+        totalMax += sec.max;
+      } else {
+        el.textContent = '—';
+        el.classList.add('na');
+      }
+    });
+
+    const scoreEl = document.getElementById('totalScore');
+    const barEl = document.getElementById('scoreBar');
+    if (ratedCount > 0) {
+      const total = totalPts.toFixed(1);
+      scoreEl.innerHTML = total + '<span> / 100</span>';
+      barEl.style.width = Math.min((totalPts / 100) * 100, 100) + '%';
+    } else {
+      scoreEl.innerHTML = '—<span> / 100</span>';
+      barEl.style.width = '0%';
+    }
+
+    // Completion
+    const totalCriteria = allSelects.length;
+    const pct = Math.round((ratedCount / totalCriteria) * 100);
+    document.getElementById('completionBar').style.width = pct + '%';
+    document.getElementById('completionText').textContent = ratedCount + ' of ' + totalCriteria + ' criteria rated';
+    document.getElementById('completionPct').textContent = pct + '%';
+  }
+
+  let koCount = 0;
+  function updateKO(checkbox) {
+    koCount = document.querySelectorAll('.ko-checkbox input:checked').length;
+    const alertEl = document.getElementById('koAlert');
+    const textEl = document.getElementById('koAlertText');
+    if (koCount > 0) {
+      alertEl.classList.add('show');
+      textEl.textContent = koCount + ' KO criterion' + (koCount > 1 ? 'a' : '') + ' flagged — evaluation may be invalidated';
+    } else {
+      alertEl.classList.remove('show');
+    }
+  }
+
+  // Character count
+  function countChars() {
+    const box = document.getElementById('commentBox');
+    const count = box.value.length;
+    document.getElementById('charCount').textContent = count;
+    if (count > 1000) box.value = box.value.substring(0, 1000);
+  }
+</script>
+</body>
+</html>

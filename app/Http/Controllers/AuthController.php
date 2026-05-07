@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -12,7 +13,39 @@ class AuthController extends Controller
     {
         return view('login');
     }
+    public function dashboard()
+    {
+        return view('dashboard');
+    }
+    public function users()
+    {
+        return view('users');
+    }
+    public function evaluations()
+    {
+        return view('evaluations');
+    }
+    public function createUser(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,manager,conseiller',
+        ]);
 
+        $name = $request->first_name . ' ' . $request->last_name;
+
+        User::create([
+            'name' => $name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
+        ]);
+
+        return redirect()->route('users')->with('success', 'User created successfully.');
+    }
     public function login(Request $request)
     {
       
@@ -22,12 +55,11 @@ class AuthController extends Controller
     ]);
      $user = User::where('email', $request->email)->first();
     
-     if ($user && hash::check($request->password, $user->password)) {
+     if ($user && Hash::check($request->password, $user->password)) {
         Auth::login($user);
         return redirect()->intended('users');
-    
-    
-    return view('dashboard');
+     }
+     
+     return redirect()->route('login')->with('error', 'Invalid email or password');
     }
-}
 }

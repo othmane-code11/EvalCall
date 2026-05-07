@@ -335,7 +335,13 @@
     Retour aux utilisateurs
   </a>
 </div>
- 
+
+@if(session('success'))
+  <div class="alert alert-success" style="margin-bottom: 20px; padding: 10px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 5px;">
+    {{ session('success') }}
+  </div>
+@endif
+
 <div class="form-grid">
  
   {{-- ── Main form card ── --}}
@@ -352,7 +358,7 @@
       </div>
     </div>
  
-    <form  id="createUserForm">
+    <form  id="createUserForm" action="/create-user" method="POST" >
       @csrf
  
       <div class="form-body">

@@ -15,7 +15,7 @@
     --walnut-mid: #C0152A;
     --walnut-lt:  #D93848;
     --cream:      #FFF5F5;
-    --cream-deep: #FFE8EA;
+    --cream-deep: #140709;
     --gold:       #F5A623;
     --gold-lt:    #F7BC54;
     --sage:       #7A8C72;
