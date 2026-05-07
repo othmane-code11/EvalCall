@@ -1192,5 +1192,6 @@
     circle.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
   });
 </script>
+@stack('scripts')
 </body>
 </html>
