@@ -64,7 +64,7 @@ class AuthController extends Controller
         Auth::login($user);
         return redirect()->intended('users');
      }
-
+     
      return redirect()->route('dashboard')->with('error', 'Invalid email or password');
     }
     public function deleteUser($id)
@@ -83,16 +83,24 @@ class AuthController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:admin,manager,conseiller',
         ]);
 
         $name = $request->first_name . ' ' . $request->last_name;
 
-        $user->update([
+        $updateData = [
             'name' => $name,
             'email' => $request->email,
             'role' => $request->role,
-        ]);
+        ];
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($updateData);
 
         return redirect()->route('users')->with('success', 'User updated successfully.');
     }
