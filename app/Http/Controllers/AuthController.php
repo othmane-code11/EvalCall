@@ -27,6 +27,7 @@ class AuthController extends Controller
     {
         return view('evaluations');
     }
+
     public function createUser(Request $request)
     {
         $request->validate([
@@ -63,7 +64,42 @@ class AuthController extends Controller
         Auth::login($user);
         return redirect()->intended('users');
      }
-     
-     return redirect()->route('login')->with('error', 'Invalid email or password');
+
+     return redirect()->route('dashboard')->with('error', 'Invalid email or password');
+    }
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('users')->with('success', 'User deleted successfully.');
+    }
+
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'role' => 'required|string|in:admin,manager,conseiller',
+        ]);
+
+        $name = $request->first_name . ' ' . $request->last_name;
+
+        $user->update([
+            'name' => $name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
+
+        return redirect()->route('users')->with('success', 'User updated successfully.');
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect()->route('login.page');
     }
 }
