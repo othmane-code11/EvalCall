@@ -27,6 +27,7 @@ class AuthController extends Controller
     {
         return view('evaluations');
     }
+
     public function createUser(Request $request)
     {
         $request->validate([
@@ -65,5 +66,12 @@ class AuthController extends Controller
      }
      
      return redirect()->route('login')->with('error', 'Invalid email or password');
+    }
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('users')->with('success', 'User deleted successfully.');
     }
 }
