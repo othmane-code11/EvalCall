@@ -16,7 +16,132 @@ class AuthController extends Controller
     }
     public function dashboard()
     {
-        return view('dashboard');
+        $totalEvaluations = Evaluation::count();
+        $evaluationsThisMonth = Evaluation::whereYear('date', now()->year)->whereMonth('date', now()->month)->count();
+        $evaluationsThisWeek = Evaluation::whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $averageScore = Evaluation::whereNotNull('score')->avg('score');
+        $averageScore = $averageScore ? round($averageScore, 1) : 0;
+
+        $totalConseillers = User::where('role', 'conseiller')->count();
+        $totalTeam = $totalConseillers;
+
+        $incomingCount = Evaluation::where('type', 'entrant')->count();
+        $outgoingCount = Evaluation::where('type', 'sortant')->count();
+        $incomingPercent = $totalEvaluations ? round($incomingCount / $totalEvaluations * 100) : 0;
+        $outgoingPercent = $totalEvaluations ? round($outgoingCount / $totalEvaluations * 100) : 0;
+
+        $koCount = Evaluation::where('has_ko', true)->count();
+        $koPercent = $totalEvaluations ? round($koCount / $totalEvaluations * 100, 1) : 0;
+
+        $conseillers = User::where('role', 'conseiller')
+            ->withCount('evaluations')
+            ->withAvg('evaluations', 'score')
+            ->get()
+            ->map(function ($cons) {
+                $score = $cons->evaluations_avg_score ? (int) round($cons->evaluations_avg_score) : 0;
+                $initials = collect(explode(' ', $cons->name))
+                    ->filter()
+                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                    ->join('');
+                $color = $score >= 85
+                    ? 'linear-gradient(135deg,#F5A623,#F7BC54)'
+                    : ($score >= 75
+                        ? 'linear-gradient(135deg,#8B0000,#C0152A)'
+                        : 'linear-gradient(135deg,#C0152A,#6B3040)');
+
+                return [
+                    'name' => $cons->name,
+                    'initials' => $initials,
+                    'score' => $score,
+                    'evals' => $cons->evaluations_count,
+                    'color' => $color,
+                ];
+            });
+
+        $topPerformer = $conseillers->sortByDesc('score')->first() ?? ['name' => '-', 'score' => 0, 'evals' => 0];
+        $lowPerformer = $conseillers->sortBy('score')->first() ?? ['name' => '-', 'score' => 0, 'evals' => 0];
+
+        $evaluations = Evaluation::with('conseiller')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get()
+            ->map(function ($ev) {
+                $name = $ev->conseiller->name ?? 'Unknown';
+                $initials = collect(explode(' ', $name))
+                    ->filter()
+                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                    ->join('');
+                $score = $ev->score ?? 0;
+                $avatar = $score >= 85
+                    ? 'linear-gradient(135deg,#F5A623,#F7BC54)'
+                    : ($score >= 75
+                        ? 'linear-gradient(135deg,#8B0000,#C0152A)'
+                        : 'linear-gradient(135deg,#8B0000,#6B3040)');
+
+                return [
+                    'id' => 'EV-'.$ev->id,
+                    'name' => $name,
+                    'initials' => $initials,
+                    'avatar' => $avatar,
+                    'type' => $ev->type === 'entrant' ? 'incoming' : 'outgoing',
+                    'date' => optional($ev->date)->format('j M Y, H:i') ?? $ev->created_at->format('j M Y, H:i'),
+                    'score' => $score,
+                    'ko' => $ev->has_ko,
+                    'status' => $ev->status,
+                    'audio' => $ev->audio,
+                ];
+            });
+
+        $latestEvaluation = Evaluation::with('conseiller')->latest('created_at')->first();
+        $pendingSignatures = Evaluation::where('status', 'completed')
+            ->where('date', '<=', now()->subDays(5))
+            ->count();
+        $staleDrafts = Evaluation::where('status', 'draft')
+            ->where('date', '<=', now()->subDays(7))
+            ->count();
+
+        $alerts = [
+            [
+                'type' => 'urgent',
+                'title' => 'KO detected',
+                'msg' => $koCount
+                    ? 'Latest KO evaluation is '.$latestEvaluation?->conseiller->name.' on '.optional($latestEvaluation?->date)->format('j M Y').'.'
+                    : 'No KO records have been flagged yet.',
+                'time' => $latestEvaluation?->created_at->diffForHumans() ?? 'just now',
+            ],
+            [
+                'type' => 'warning',
+                'title' => 'Awaiting signature',
+                'msg' => $pendingSignatures.' evaluations are completed but pending signature for over 5 days.',
+                'time' => 'Today',
+            ],
+            [
+                'type' => 'urgent',
+                'title' => 'Stale draft',
+                'msg' => $staleDrafts.' drafts have been inactive for over 7 days.',
+                'time' => 'Today',
+            ],
+        ];
+
+        return view('dashboard', compact(
+            'totalEvaluations',
+            'evaluationsThisMonth',
+            'evaluationsThisWeek',
+            'averageScore',
+            'totalConseillers',
+            'totalTeam',
+            'incomingPercent',
+            'outgoingPercent',
+            'koCount',
+            'koPercent',
+            'conseillers',
+            'topPerformer',
+            'lowPerformer',
+            'incomingPercent',
+            'outgoingPercent',
+            'evaluations',
+            'alerts'
+        ));
     }
     public function users()
     {

@@ -28,6 +28,73 @@
     --shadow-hover: 0 8px 32px rgba(139,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
     --transition:   all 0.25s cubic-bezier(0.4,0,0.2,1);
   }
+  /* ── Signature pad ── */
+.signature-outer {
+  border: 2px dashed rgba(139,0,0,0.18);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff9f9, var(--white));
+  overflow: hidden;
+  transition: var(--transition);
+}
+.signature-outer:hover { border-color: var(--walnut-mid); }
+.signature-outer.signing {
+  border-color: var(--walnut-mid);
+  border-style: solid;
+  box-shadow: 0 0 0 3px rgba(192,21,42,0.07);
+}
+.sig-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(139,0,0,0.06);
+  background: var(--cream);
+}
+.sig-hint {
+  font-size: 11.5px; color: var(--text-muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.sig-actions { display: flex; gap: 8px; }
+.sig-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 7px;
+  font-size: 11.5px; font-weight: 600; cursor: pointer;
+  transition: var(--transition);
+  border: 1.5px solid rgba(139,0,0,0.15);
+  background: var(--white); color: var(--text-mid);
+  font-family: 'DM Sans', sans-serif;
+}
+.sig-btn svg { width: 12px; height: 12px; }
+.sig-btn:hover {
+  background: var(--cream-deep);
+  border-color: var(--walnut-mid);
+  color: var(--walnut-mid);
+}
+.sig-btn.sig-btn-primary {
+  background: linear-gradient(135deg, var(--walnut), var(--walnut-mid));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px rgba(139,0,0,0.25);
+}
+.sig-btn.sig-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+#signatureCanvas {
+  display: block; width: 100%; height: 180px;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'%3E%3Cpath fill='%238B0000' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/%3E%3C/svg%3E") 0 24, crosshair;
+  background: #fff;
+  touch-action: none;
+}
+.sig-status {
+  padding: 8px 14px;
+  border-top: 1px solid rgba(139,0,0,0.05);
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fafafa;
+}
+.sig-status-label { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; }
+.sig-status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(139,0,0,0.15); margin-right: 7px; flex-shrink: 0;
+  transition: var(--transition);
+}
+.sig-status-dot.active { background: var(--sage); box-shadow: 0 0 0 3px rgba(122,140,114,0.2); }
+.sig-strokes { font-size: 11px; color: var(--text-muted); }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1076,6 +1143,60 @@
         </div>
       </div>
     </div>
+    {{-- ─── Signature Card ─────────────────────────────────────────── --}}
+<div class="eval-card">
+  <div class="card-header-strip">
+    <div class="card-header-icon" style="background:rgba(107,48,64,0.1);color:var(--text-mid);">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+      </svg>
+    </div>
+    <div class="card-header-text">
+      <h3>Evaluator Signature</h3>
+      <p>Draw your signature to confirm and validate this evaluation</p>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="form-group">
+      <label class="form-label">
+        Signature <span class="optional">(draw with mouse or finger)</span>
+      </label>
+
+      <div class="signature-outer" id="sigOuter">
+        <div class="sig-topbar">
+          <div class="sig-hint">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--walnut-mid);flex-shrink:0;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            </svg>
+            Sign in the area below — use your mouse or touch
+          </div>
+          <div class="sig-actions">
+            <button type="button" class="sig-btn" id="clearBtn" onclick="clearSig()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              Clear
+            </button>
+            <button type="button" class="sig-btn sig-btn-primary" onclick="saveSig()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Confirm
+            </button>
+          </div>
+        </div>
+
+        <canvas id="signatureCanvas"></canvas>
+
+        <div class="sig-status">
+          <div class="sig-status-label">
+            <div class="sig-status-dot" id="sigDot"></div>
+            <span id="sigStatusText">Waiting for signature…</span>
+          </div>
+          <div class="sig-strokes" id="sigStrokes"></div>
+        </div>
+      </div>
+
+      <input type="hidden" name="signature" id="signatureData">
+    </div>
+  </div>
+</div>
 
     <div class="actions-card">
       <div class="actions-inner">
@@ -1277,5 +1398,88 @@
     if (count > 1000) box.value = box.value.substring(0, 1000);
   }
 
+// ── Signature pad ──
+(function () {
+  const canvas = document.getElementById('signatureCanvas');
+  const ctx = canvas.getContext('2d');
+  const outer = document.getElementById('sigOuter');
+  const dot = document.getElementById('sigDot');
+  const statusText = document.getElementById('sigStatusText');
+  const strokesEl = document.getElementById('sigStrokes');
+  let drawing = false, hasSig = false, strokes = 0;
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.strokeStyle = '#8B0000';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    if (e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function updateStatus() {
+    if (hasSig) {
+      dot.classList.add('active');
+      statusText.textContent = 'Signature captured';
+      strokesEl.textContent = strokes + ' stroke' + (strokes !== 1 ? 's' : '');
+    }
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true; strokes++;
+    const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    outer.classList.add('signing');
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    hasSig = true; updateStatus();
+  });
+  canvas.addEventListener('mouseup', () => { drawing = false; });
+  canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault(); drawing = true; strokes++;
+    const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    outer.classList.add('signing');
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    hasSig = true; updateStatus();
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => { drawing = false; });
+
+  window.clearSig = function () {
+    const r = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+    hasSig = false; strokes = 0;
+    dot.classList.remove('active');
+    statusText.textContent = 'Waiting for signature…';
+    strokesEl.textContent = '';
+    outer.classList.remove('signing');
+    document.getElementById('signatureData').value = '';
+  };
+
+  window.saveSig = function () {
+    if (!hasSig) { alert('Please draw your signature first.'); return; }
+    document.getElementById('signatureData').value = canvas.toDataURL('image/png');
+    statusText.textContent = '✓ Signature confirmed and saved';
+    strokesEl.textContent = '';
+  };
+
+  resize();
+  window.addEventListener('resize', resize);
+})();
 </script>
 @endpush
