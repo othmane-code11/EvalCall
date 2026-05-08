@@ -949,7 +949,7 @@
     .then(data => {
       // Success - redirect to dashboard
       if (data.success) {
-        window.location.href = '/users';
+        window.location.href = '/dashboard';
       }
     })
     .catch(error => {

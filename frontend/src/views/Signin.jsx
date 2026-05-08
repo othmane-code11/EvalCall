@@ -2,6 +2,7 @@ import * as React from 'react';
 import {useRef, useState, useEffect} from "react";
 import axiosClient from "../axios_client.js";
 import { useStateContext } from "../contexts/ContextProvider.jsx";
+import { useNavigate } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -37,6 +38,7 @@ export default function Signin() {
   const emailRef = useRef();
   const passwordRef = useRef();
   const { setCurrentUser, setToken } = useStateContext();
+  const navigate = useNavigate();
 
   /**
    * To set errors and alerts
@@ -138,6 +140,7 @@ export default function Signin() {
         setAlertMessage('Login successful! Redirecting...');
         setAlertType('success');
         setLoading(false);
+        navigate('/dashboard');
       })
       .catch((err) => {
         const response = err.response;

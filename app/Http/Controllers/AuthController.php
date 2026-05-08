@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evaluation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +26,48 @@ class AuthController extends Controller
     }
     public function evaluations()
     {
-        return view('evaluations');
+        $conseillers = $this->getConseillers();
+        return view('evaluations', compact('conseillers'));
+    }
+
+    public function evaluationsCreate()
+    {
+        $conseillers = $this->getConseillers();
+        return view('evaluations', compact('conseillers'));
+    }
+
+    protected function getConseillers()
+    {
+        return User::where('role', 'conseiller')->orderBy('name')->get();
+    }
+
+    public function storeEvaluation(Request $request)
+    {
+        $validated = $request->validate([
+            'conseiller_id' => 'required|exists:users,id',
+            'type' => 'required|in:entrant,sortant',
+            'date' => 'required|date',
+            'reference' => 'nullable|string|max:255',
+            'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a,aac,wma,flac|max:10240',
+            'status' => 'nullable|in:draft,completed,signed',
+        ]);
+
+        $audioPath = null;
+        if ($request->hasFile('audio')) {
+            $audioPath = $request->file('audio')->store('evaluations/audio', 'public');
+        }
+
+        Evaluation::create([
+            'manager_id' => Auth::id(),
+            'conseiller_id' => $validated['conseiller_id'],
+            'type' => $validated['type'],
+            'date' => $validated['date'],
+            'reference' => $validated['reference'] ?? null,
+            'audio' => $audioPath,
+            'status' => $validated['status'] ?? 'draft',
+        ]);
+
+        return redirect()->route('evaluations.create')->with('success', 'Evaluation saved successfully.');
     }
 
     public function createUser(Request $request)
@@ -78,7 +120,7 @@ class AuthController extends Controller
             ]);
         }
         
-        return redirect()->intended('dashboard');
+        return redirect()->route('dashboard');
      }
      
      // Check if it's an AJAX request
@@ -129,12 +171,20 @@ class AuthController extends Controller
 
         $user->update($updateData);
 
-        return redirect()->route('users')->with('success', 'User updated successfully.');
+        return back()->with('error', 'Invalid email or password');
     }
 
     public function logout()
     {
         Auth::logout();
         return redirect()->route('login.page');
+    }
+
+    public function activeUser(Request $request)
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => $request->user()
+        ]);
     }
 }
