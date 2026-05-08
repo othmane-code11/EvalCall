@@ -56,4 +56,9 @@ class User extends Authenticatable
         $parts = explode(' ', $this->name, 2);
         return $parts[1] ?? '';
     }
+
+    public function evaluations()
+    {
+        return $this->hasMany(Evaluation::class, 'conseiller_id');
+    }
 }

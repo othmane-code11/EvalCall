@@ -336,6 +336,42 @@
   .quick-actions, .filters-bar { animation: fadeUp 0.5s 0.22s ease both; }
   .bottom-grid > .card:first-child { animation: fadeUp 0.5s 0.40s ease both; }
   .bottom-grid > .card:last-child  { animation: fadeUp 0.5s 0.45s ease both; }
+
+  /* ─── Audio Modal ─── */
+  .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-content {
+    background: var(--white);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+  }
+  .close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+  .close:hover { color: var(--walnut); }
+  #audioPlayer {
+    width: 100%;
+    margin-top: 16px;
+  }
 </style>
 
 {{-- ═══════════════════════════════════════════════════════════
@@ -582,16 +618,11 @@
 
     <div class="conseiller-list">
       @php
-        $conseillers = $conseillers ?? [
-          ['name' => 'Fatima Zahra Bennani', 'initials' => 'FB', 'score' => 94, 'evals' => 18, 'color' => 'linear-gradient(135deg,#F5A623,#F7BC54)'],
-          ['name' => 'Hamza Alaoui',         'initials' => 'HA', 'score' => 91, 'evals' => 14, 'color' => 'linear-gradient(135deg,#8B0000,#C0152A)'],
-          ['name' => 'Imane Cherkaoui',      'initials' => 'IC', 'score' => 88, 'evals' => 12, 'color' => 'linear-gradient(135deg,#C0152A,#D93848)'],
-          ['name' => 'Salma Tazi',           'initials' => 'ST', 'score' => 84, 'evals' => 16, 'color' => 'linear-gradient(135deg,#7A8C72,#9CB394)'],
-          ['name' => 'Amine El Khattabi',    'initials' => 'AE', 'score' => 79, 'evals' => 11, 'color' => 'linear-gradient(135deg,#6B3040,#9C7078)'],
-          ['name' => 'Nadia Benali',         'initials' => 'NB', 'score' => 76, 'evals' => 10, 'color' => 'linear-gradient(135deg,#C0152A,#F5A623)'],
-          ['name' => 'Youssef Idrissi',      'initials' => 'YI', 'score' => 68, 'evals' => 8,  'color' => 'linear-gradient(135deg,#8B0000,#6B3040)'],
-        ];
+        $conseillers = $conseillers ?? collect();
       @endphp
+
+
+      
 
       @foreach($conseillers as $c)
         @php
@@ -686,16 +717,7 @@
       </thead>
       <tbody>
         @php
-          $evaluations = $evaluations ?? [
-            ['id' => 'EV-1247', 'name' => 'Fatima Zahra Bennani', 'initials' => 'FB', 'avatar' => 'linear-gradient(135deg,#F5A623,#F7BC54)', 'type' => 'incoming', 'date' => '6 May 2026, 09:42', 'score' => 94, 'ko' => false, 'status' => 'signed'],
-            ['id' => 'EV-1246', 'name' => 'Amine El Khattabi',    'initials' => 'AE', 'avatar' => 'linear-gradient(135deg,#6B3040,#9C7078)', 'type' => 'outgoing', 'date' => '6 May 2026, 08:15', 'score' => 71, 'ko' => true,  'status' => 'completed'],
-            ['id' => 'EV-1245', 'name' => 'Hamza Alaoui',         'initials' => 'HA', 'avatar' => 'linear-gradient(135deg,#8B0000,#C0152A)', 'type' => 'incoming', 'date' => '5 May 2026, 17:28', 'score' => 89, 'ko' => false, 'status' => 'completed'],
-            ['id' => 'EV-1244', 'name' => 'Salma Tazi',           'initials' => 'ST', 'avatar' => 'linear-gradient(135deg,#7A8C72,#9CB394)', 'type' => 'outgoing', 'date' => '5 May 2026, 14:05', 'score' => 82, 'ko' => false, 'status' => 'signed'],
-            ['id' => 'EV-1243', 'name' => 'Imane Cherkaoui',      'initials' => 'IC', 'avatar' => 'linear-gradient(135deg,#C0152A,#D93848)', 'type' => 'incoming', 'date' => '5 May 2026, 11:33', 'score' => 88, 'ko' => false, 'status' => 'completed'],
-            ['id' => 'EV-1242', 'name' => 'Youssef Idrissi',      'initials' => 'YI', 'avatar' => 'linear-gradient(135deg,#8B0000,#6B3040)', 'type' => 'outgoing', 'date' => '4 May 2026, 16:51', 'score' => 64, 'ko' => true,  'status' => 'draft'],
-            ['id' => 'EV-1241', 'name' => 'Nadia Benali',         'initials' => 'NB', 'avatar' => 'linear-gradient(135deg,#C0152A,#F5A623)', 'type' => 'incoming', 'date' => '4 May 2026, 10:18', 'score' => 76, 'ko' => false, 'status' => 'draft'],
-            ['id' => 'EV-1240', 'name' => 'Fatima Zahra Bennani', 'initials' => 'FB', 'avatar' => 'linear-gradient(135deg,#F5A623,#F7BC54)', 'type' => 'incoming', 'date' => '3 May 2026, 15:09', 'score' => 92, 'ko' => false, 'status' => 'signed'],
-          ];
+          $evaluations = $evaluations ?? collect();
         @endphp
 
         @foreach($evaluations as $ev)
@@ -756,7 +778,7 @@
                 <button class="icon-btn" title="Edit" {{ $ev['status'] === 'signed' ? 'disabled style=opacity:0.4;cursor:not-allowed;' : '' }}>
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </button>
-                <button class="icon-btn" title="Audio">
+                <button class="icon-btn" title="Audio" onclick="playAudio('{{ asset('storage/' . $ev['audio']) }}')">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
                 </button>
                 <button class="icon-btn" title="Download report">
@@ -788,13 +810,7 @@
 
     <div class="alert-list">
       @php
-        $alerts = $alerts ?? [
-          ['type' => 'urgent',  'title' => 'KO detected', 'msg' => 'EV-1246 (Amine El Khattabi) flagged a critical violation in script compliance.', 'time' => '12 min ago'],
-          ['type' => 'warning', 'title' => 'Awaiting signature', 'msg' => '3 evaluations are completed but pending conseiller signature for over 5 days.', 'time' => '2 h ago'],
-          ['type' => 'urgent',  'title' => 'Stale draft', 'msg' => 'EV-1242 has been in draft state for 8 days. Please complete or discard.', 'time' => '4 h ago'],
-          ['type' => 'info',    'title' => 'New evaluation', 'msg' => 'Hamza Alaoui submitted EV-1245 for incoming call review.', 'time' => 'Yesterday'],
-          ['type' => 'warning', 'title' => 'Score dip', 'msg' => 'Youssef Idrissi dropped 8 pts vs. last month. Consider a 1-on-1 coaching session.', 'time' => '2 days ago'],
-        ];
+        $alerts = $alerts ?? collect();
       @endphp
 
       @foreach($alerts as $alert)
@@ -915,6 +931,33 @@
       });
     }, 150);
   });
+
+  // Audio modal functions
+  function playAudio(src) {
+    console.log('Playing audio:', src);
+    document.getElementById('audioPlayer').src = src;
+    document.getElementById('audioModal').style.display = 'block';
+  }
+  function closeAudioModal() {
+    document.getElementById('audioModal').style.display = 'none';
+    document.getElementById('audioPlayer').pause();
+  }
+  // Close modal on outside click
+  window.onclick = function(event) {
+    const modal = document.getElementById('audioModal');
+    if (event.target == modal) {
+      closeAudioModal();
+    }
+  }
 </script>
+
+{{-- Audio Modal --}}
+<div id="audioModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAudioModal()">&times;</span>
+    <h3 style="margin:0 0 16px 0; color: var(--text-dark);">Listen to Audio</h3>
+    <audio id="audioPlayer" controls></audio>
+  </div>
+</div>
 
 @endsection
