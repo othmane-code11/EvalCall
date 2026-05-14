@@ -477,7 +477,7 @@
     <svg class="qa-arrow" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
   </a>
 
-  <a href="{{ url('/export') }}" class="qa-card gold">
+  <a href="{{ route('export') }}" class="qa-card gold">
     <div class="qa-icon">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -772,7 +772,7 @@
             </td>
             <td style="text-align:right;">
               <div class="icon-actions">
-                <button class="icon-btn" title="View">
+                <button class="icon-btn" title="View signature" onclick='showSignature({{ json_encode($ev['signature']) }}, {{ json_encode($ev['name']) }})'>
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </button>
                 <button class="icon-btn" title="Edit" {{ $ev['status'] === 'signed' ? 'disabled style=opacity:0.4;cursor:not-allowed;' : '' }}>
@@ -942,11 +942,41 @@
     document.getElementById('audioModal').style.display = 'none';
     document.getElementById('audioPlayer').pause();
   }
+
+  function showSignature(signature, name) {
+    const modal = document.getElementById('signatureModal');
+    const img = document.getElementById('signatureImage');
+    const title = document.getElementById('signatureTitle');
+    const placeholder = document.getElementById('signaturePlaceholder');
+
+    title.textContent = name + ' — Signature';
+    if (!signature) {
+      img.style.display = 'none';
+      placeholder.style.display = 'block';
+      placeholder.textContent = 'No signature available for this evaluation.';
+    } else {
+      img.src = signature;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeSignatureModal() {
+    const modal = document.getElementById('signatureModal');
+    modal.style.display = 'none';
+  }
+
   // Close modal on outside click
   window.onclick = function(event) {
-    const modal = document.getElementById('audioModal');
-    if (event.target == modal) {
+    const audioModal = document.getElementById('audioModal');
+    const signatureModal = document.getElementById('signatureModal');
+    if (event.target == audioModal) {
       closeAudioModal();
+    }
+    if (event.target == signatureModal) {
+      closeSignatureModal();
     }
   }
 </script>
@@ -957,6 +987,16 @@
     <span class="close" onclick="closeAudioModal()">&times;</span>
     <h3 style="margin:0 0 16px 0; color: var(--text-dark);">Listen to Audio</h3>
     <audio id="audioPlayer" controls></audio>
+  </div>
+</div>
+
+{{-- Signature Modal --}}
+<div id="signatureModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSignatureModal()">&times;</span>
+    <h3 id="signatureTitle" style="margin:0 0 16px 0; color: var(--text-dark);"></h3>
+    <div id="signaturePlaceholder" style="font-size:14px;color:var(--text-muted);">No signature available.</div>
+    <img id="signatureImage" src="" alt="Evaluator signature" style="width:100%;border:1px solid rgba(139,0,0,0.1);border-radius:10px;display:none;" />
   </div>
 </div>
 
