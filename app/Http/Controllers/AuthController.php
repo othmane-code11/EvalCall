@@ -146,6 +146,51 @@ class AuthController extends Controller
         ));
     }
 
+    public function settings()
+    {
+        $user = Auth::user();
+
+        return view('settings', compact('user'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+        ]);
+
+        return redirect()->route('settings')->with('success', 'Profile updated successfully.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ], [
+            'new_password.confirmed' => 'The new password confirmation does not match.',
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->route('settings')
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput();
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return redirect()->route('settings')->with('success_password', 'Password updated successfully.');
+    }
+
     public function users()
     {
         $users = User::all();
