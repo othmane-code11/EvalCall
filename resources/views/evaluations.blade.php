@@ -12,7 +12,7 @@
     --walnut-light: #D93848;
     --bg:           #FAFAFA;
     --white:        #FFFFFF;
-    --cream:        #FFF5F5;
+    --cream:        #ebcbcb;
     --cream-deep:   #FFE8EA;
     --gold:         #F5A623;
     --gold-light:   #F7BC54;
