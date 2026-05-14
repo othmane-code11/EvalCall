@@ -21,6 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/evaluations',[AuthController::class,'evaluations'])->name('evaluations');
     Route::get('/evaluations/create',[AuthController::class,'evaluationsCreate'])->name('evaluations.create');
     Route::post('/evaluations',[AuthController::class,'storeEvaluation'])->name('evaluations.store');
+    Route::get('/export', [AuthController::class, 'export'])->name('export');
 });
 
 route::get('/settings', function () {

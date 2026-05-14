@@ -17,6 +17,7 @@ class Evaluation extends Model
         'date',
         'reference',
         'audio',
+        'signature',
         'score',
         'has_ko',
         'status',

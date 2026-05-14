@@ -223,13 +223,13 @@
     color: var(--walnut-mid);
     font-size: 14px;
     line-height: 1;
-  }
+  } 
   .form-label .optional {
     font-weight: 400;
     color: var(--text-muted);
     font-size: 11px;
   }
-
+  
   .form-control {
     width: 100%;
     padding: 10px 14px;
@@ -251,7 +251,7 @@
   }
   .form-control:hover:not(:focus) { border-color: rgba(139,0,0,0.22); }
   .form-control::placeholder { color: var(--text-muted); opacity: 0.7; }
-
+           
   .select-wrap { position: relative; }
   .select-wrap select { padding-right: 36px; cursor: pointer; }
   .select-wrap::after {
@@ -820,7 +820,7 @@
 
 <div class="eval-layout">
   <div class="form-stack">
-
+      
     <div class="eval-card">
       <div class="card-header-strip">
         <div class="card-header-icon" style="background:rgba(139,0,0,0.08);color:var(--walnut);">
@@ -830,7 +830,7 @@
           <h3>General Information</h3>
           <p>Basic details about the call and advisor</p>
         </div>
-      </div>
+    </div>
       <div class="card-body">
         <div class="form-row">
           <div class="form-group">
@@ -878,7 +878,6 @@
                 <option>Team A – Retention</option>
                 <option>Team B – Acquisition</option>
                 <option>Team C – Support</option>
-                <option>Team D – Collections</option>
               </select>
             </div>
           </div>
@@ -951,7 +950,7 @@
             <thead>
               <tr>
                 <th>Criterion</th>
-                <th class="score-col">Score (0–5)</th>
+                <th class="score-col">Score (0-5)</th>
                 <th class="ko-col">KO</th>
               </tr>
             </thead>
@@ -1433,17 +1432,19 @@
       strokesEl.textContent = strokes + ' stroke' + (strokes !== 1 ? 's' : '');
     }
   }
-
   canvas.addEventListener('mousedown', e => {
     drawing = true; strokes++;
     const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
     outer.classList.add('signing');
   });
+
+
   canvas.addEventListener('mousemove', e => {
     if (!drawing) return;
     const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
     hasSig = true; updateStatus();
   });
+
   canvas.addEventListener('mouseup', () => { drawing = false; });
   canvas.addEventListener('mouseleave', () => { drawing = false; });
 
@@ -1451,7 +1452,9 @@
     e.preventDefault(); drawing = true; strokes++;
     const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
     outer.classList.add('signing');
+
   }, { passive: false });
+
   canvas.addEventListener('touchmove', e => {
     e.preventDefault();
     if (!drawing) return;
@@ -1477,9 +1480,11 @@
     statusText.textContent = '✓ Signature confirmed and saved';
     strokesEl.textContent = '';
   };
-
-  resize();
+  
+                         
+  resize();         
   window.addEventListener('resize', resize);
 })();
 </script>
+
 @endpush

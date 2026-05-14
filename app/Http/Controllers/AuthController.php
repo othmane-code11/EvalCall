@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Evaluation;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -89,6 +90,7 @@ class AuthController extends Controller
                     'ko' => $ev->has_ko,
                     'status' => $ev->status,
                     'audio' => $ev->audio,
+                    'signature' => $ev->signature,
                 ];
             });
 
@@ -143,12 +145,187 @@ class AuthController extends Controller
             'alerts'
         ));
     }
+
     public function users()
     {
         $users = User::all();
-
         return view('users', compact('users'));
     }
+
+    public function export(Request $request)
+    {
+        if (! $request->has('format')) {
+            return view('export');
+        }
+
+        $format = strtolower($request->query('format'));
+        $evaluations = Evaluation::with('conseiller')->orderByDesc('created_at')->get();
+
+        if ($format === 'excel' || $format === 'xls') {
+            return $this->downloadExcel($evaluations);
+        }
+
+        if ($format === 'pdf') {
+            return $this->downloadPdf($evaluations);
+        }
+
+        return $this->downloadCsv($evaluations);
+    }
+
+    protected function downloadCsv($evaluations)
+    {
+        $filename = 'evaluations-export-'.now()->format('YmdHis').'.csv';
+        $rows = $this->prepareExportRows($evaluations);
+
+        return response()->streamDownload(function () use ($rows) {
+            $output = fopen('php://output', 'w');
+            fputs($output, "\xEF\xBB\xBF");
+            if (! empty($rows)) {
+                fputs($output, "sep=,\r\n");
+                fputcsv($output, array_keys($rows[0]));
+                foreach ($rows as $row) {
+                    fputcsv($output, array_values($row));
+                }
+            }
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache',
+        ]);
+    }
+
+    protected function downloadExcel($evaluations)
+    {
+        $filename = 'evaluations-export-'.now()->format('YmdHis').'.xls';
+        $rows = $this->prepareExportRows($evaluations);
+
+        return response()->streamDownload(function () use ($rows) {
+            $output = fopen('php://output', 'w');
+            fputs($output, "\xEF\xBB\xBF");
+            if (! empty($rows)) {
+                fputs($output, "sep=,\r\n");
+                fputcsv($output, array_keys($rows[0]));
+                foreach ($rows as $row) {
+                    fputcsv($output, array_values($row));
+                }
+            }
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Cache-Control' => 'no-store, no-cache',
+        ]);
+    }
+
+    protected function downloadPdf($evaluations)
+    {
+        $filename = 'evaluations-export-'.now()->format('YmdHis').'.pdf';
+        $rows = $this->prepareExportRows($evaluations);
+        $pdf = $this->buildPdf($rows);
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Cache-Control' => 'no-store, no-cache',
+        ]);
+    }
+
+    protected function prepareExportRows($evaluations)
+    {
+        return $evaluations->map(function ($ev) {
+            return [
+                'Evaluation ID' => 'EV-'.$ev->id,
+                'Conseiller' => $ev->conseiller->name ?? 'Unknown',
+                'Call Type' => $ev->type === 'entrant' ? 'Incoming' : 'Outgoing',
+                'Date' => $this->formatExportDate($ev->date ?? $ev->created_at),
+                'Reference' => $ev->reference ?? '-',
+                'Score' => $ev->score ?? 0,
+                'KO' => $ev->has_ko ? 'Yes' : 'No',
+                'Status' => ucfirst($ev->status),
+                'Audio' => $ev->audio ? asset('storage/'.$ev->audio) : '-',
+                'Signature' => $ev->signature ? 'Yes' : 'No',
+            ];
+        })->toArray();
+    }
+
+    protected function formatExportDate($value)
+    {
+        if (! $value) {
+            return '-';
+        }
+
+        try {
+            $date = $value instanceof Carbon ? $value : Carbon::parse($value);
+            return "'".$date->format('Y-m-d H:i');
+        } catch (\Throwable $e) {
+            return "'".trim((string) $value);
+        }
+    }
+
+    protected function buildPdf(array $rows)
+    {
+        $lines = [];
+        $lines[] = $this->escapePdfText('KiteaCall Evaluations Export');
+        $lines[] = $this->escapePdfText('Generated: '.now()->format('Y-m-d H:i'));
+        $lines[] = $this->escapePdfText(str_repeat('-', 90));
+
+        $header = array_keys($rows[0] ?? []);
+        $lines[] = $this->escapePdfText(implode(' | ', $header));
+        $lines[] = $this->escapePdfText(str_repeat('-', 90));
+
+        $maxRows = 30;
+        $count = 0;
+        foreach ($rows as $row) {
+            if ($count >= $maxRows) {
+                $lines[] = $this->escapePdfText('...output truncated for preview, use CSV/Excel to download the full dataset.');
+                break;
+            }
+            $values = array_values($row);
+            $lines[] = $this->escapePdfText(implode(' | ', $values));
+            $count++;
+        }
+
+        $content = "BT /F1 9 Tf 40 770 Td (".$lines[0].") Tj ";
+        $content .= "0 -14 Td (".$lines[1].") Tj ";
+        $content .= "0 -18 Td (".$lines[2].") Tj ";
+        foreach (array_slice($lines, 3) as $line) {
+            $content .= "0 -12 Td (".$line.") Tj ";
+        }
+        $content .= ' ET';
+
+        $pdfObjects = [];
+        $pdfObjects[] = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+        $pdfObjects[] = "2 0 obj\n<< /Type /Pages /Count 1 /Kids [3 0 R] >>\nendobj\n";
+        $pdfObjects[] = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n";
+        $pdfObjects[] = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n";
+        $streamLength = strlen($content);
+        $pdfObjects[] = "5 0 obj\n<< /Length $streamLength >>\nstream\n$content\nendstream\nendobj\n";
+
+        $pdf = "%PDF-1.4\r\n";
+        $offsets = [];
+        foreach ($pdfObjects as $obj) {
+            $offsets[] = strlen($pdf);
+            $pdf .= $obj;
+        }
+
+        $xrefStart = strlen($pdf);
+        $xref = "xref\r\n0 ".(count($pdfObjects) + 1)."\r\n";
+        $xref .= "0000000000 65535 f \r\n";
+        foreach ($offsets as $offset) {
+            $xref .= sprintf('%010d 00000 n \r\n', $offset);
+        }
+
+        $pdf .= $xref;
+        $pdf .= "trailer\r\n<< /Size ".(count($pdfObjects) + 1)." /Root 1 0 R >>\r\n";
+        $pdf .= "startxref\r\n".$xrefStart."\r\n%%EOF";
+
+        return $pdf;
+    }
+
+    protected function escapePdfText(string $text): string
+    {
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
+    }
+
     public function evaluations()
     {
         $conseillers = $this->getConseillers();
@@ -174,6 +351,7 @@ class AuthController extends Controller
             'date' => 'required|date',
             'reference' => 'nullable|string|max:255',
             'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a,aac,wma,flac|max:10240',
+            'signature' => 'nullable|string|max:200000',
             'status' => 'nullable|in:draft,completed,signed',
         ]);
 
@@ -189,6 +367,7 @@ class AuthController extends Controller
             'date' => $validated['date'],
             'reference' => $validated['reference'] ?? null,
             'audio' => $audioPath,
+            'signature' => $validated['signature'] ?? null,
             'status' => $validated['status'] ?? 'draft',
         ]);
 
