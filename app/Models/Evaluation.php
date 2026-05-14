@@ -24,7 +24,7 @@ class Evaluation extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'datetime',
         'has_ko' => 'boolean',
     ];
 

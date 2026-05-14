@@ -393,10 +393,12 @@ class AuthController extends Controller
         $validated = $request->validate([
             'conseiller_id' => 'required|exists:users,id',
             'type' => 'required|in:entrant,sortant',
-            'date' => 'required|date',
+            'date' => 'required|date_format:Y-m-d\TH:i',
             'reference' => 'nullable|string|max:255',
             'audio' => 'nullable|file|mimes:mp3,wav,ogg,m4a,aac,wma,flac|max:10240',
             'signature' => 'nullable|string|max:200000',
+            'score' => 'nullable|numeric|min:0|max:100',
+            'has_ko' => 'nullable|boolean',
             'status' => 'nullable|in:draft,completed,signed',
         ]);
 
@@ -413,6 +415,8 @@ class AuthController extends Controller
             'reference' => $validated['reference'] ?? null,
             'audio' => $audioPath,
             'signature' => $validated['signature'] ?? null,
+            'score' => $validated['score'] ? (int)round($validated['score']) : null,
+            'has_ko' => (bool) $validated['has_ko'],
             'status' => $validated['status'] ?? 'draft',
         ]);
 

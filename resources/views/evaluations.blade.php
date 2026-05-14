@@ -610,19 +610,24 @@
 
   .score-ko-alert {
     margin: 0 16px 16px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     border-radius: 9px;
     background: rgba(139,0,0,0.05);
-    border: 1px solid rgba(139,0,0,0.12);
+    border: 1.5px solid rgba(139,0,0,0.2);
     display: flex;
     align-items: flex-start;
     gap: 10px;
     display: none;
   }
-  .score-ko-alert.show { display: flex; }
+  .score-ko-alert.show {
+    display: flex;
+    background: linear-gradient(135deg, rgba(139,0,0,0.08), rgba(192,21,42,0.06));
+    border-color: #C0152A;
+    box-shadow: 0 0 0 3px rgba(192,21,42,0.05);
+  }
   .ko-alert-icon { color: var(--walnut); flex-shrink: 0; margin-top: 1px; }
-  .ko-alert-icon svg { width: 15px; height: 15px; }
-  .ko-alert-text { font-size: 11.5px; color: var(--walnut-mid); font-weight: 600; line-height: 1.4; }
+  .ko-alert-icon svg { width: 16px; height: 16px; }
+  .ko-alert-text { font-size: 12px; color: #8B0000; font-weight: 700; line-height: 1.4; }
 
   .actions-card {
     background: var(--white);
@@ -861,8 +866,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Date <span class="required">*</span></label>
-            <input type="date" name="date" class="form-control" value="{{ old('date', now()->toDateString()) }}" required>
+            <label class="form-label">Date & Time <span class="required">*</span></label>
+            <input type="datetime-local" name="date" class="form-control" value="{{ old('date', now()->format('Y-m-d\TH:i')) }}" required>
           </div>
           <div class="form-group">
             <label class="form-label">Reference <span class="optional">(optional)</span></label>
@@ -939,6 +944,16 @@
         </div>
       </div>
       <div class="card-body">
+
+        <div style="margin-bottom:20px;padding:14px;border-radius:10px;background:linear-gradient(135deg,rgba(122,140,114,0.08),rgba(245,166,35,0.04));border:1px solid rgba(122,140,114,0.12);">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <svg style="width:18px;height:18px;color:#7A8C72;flex-shrink:0;margin-top:2px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin-bottom:4px;">🚫 KO Criteria (Knockout Criteria)</div>
+              <div style="font-size:11.5px;color:var(--text-mid);line-height:1.5;">Check "KO" for any criterion that is critically non-compliant or a regulatory violation. If any KO is marked, the evaluation result will be automatically marked as <strong>FAILED</strong> regardless of the total score.</div>
+            </div>
+          </div>
+        </div>
 
         <div class="eval-section">
           <div class="eval-section-header">
@@ -1193,6 +1208,8 @@
       </div>
 
       <input type="hidden" name="signature" id="signatureData">
+      <input type="hidden" name="score" id="scoreData">
+      <input type="hidden" name="has_ko" id="hasKoData" value="0">
     </div>
   </div>
 </div>
@@ -1365,9 +1382,11 @@
       const total = totalPts.toFixed(1);
       scoreEl.innerHTML = total + '<span> / 100</span>';
       barEl.style.width = Math.min((totalPts / 100) * 100, 100) + '%';
+      document.getElementById('scoreData').value = total;
     } else {
       scoreEl.innerHTML = '—<span> / 100</span>';
       barEl.style.width = '0%';
+      document.getElementById('scoreData').value = '';
     }
 
     const totalCriteria = allSelects.length;
@@ -1382,11 +1401,28 @@
     koCount = document.querySelectorAll('.ko-checkbox input:checked').length;
     const alertEl = document.getElementById('koAlert');
     const textEl = document.getElementById('koAlertText');
+    const scoreEl = document.getElementById('totalScore');
+    const hasKoInput = document.getElementById('hasKoData');
+    const submitBtn = document.querySelector('button[value="completed"]');
+    
     if (koCount > 0) {
       alertEl.classList.add('show');
-      textEl.textContent = koCount + ' KO criterion' + (koCount > 1 ? 'a' : '') + ' flagged — evaluation may be invalidated';
+      textEl.textContent = koCount + ' KO criterion' + (koCount > 1 ? 'a' : '') + ' flagged — evaluation result FAILED';
+      scoreEl.innerHTML = '<span style="color:#C0152A;font-weight:800;">KO</span><span style="font-size:14px;color:var(--text-muted);"> / FAILED</span>';
+      document.getElementById('scoreBar').style.width = '100%';
+      document.getElementById('scoreBar').style.background = 'linear-gradient(90deg, #8B0000, #C0152A)';
+      hasKoInput.value = '1';
+      document.getElementById('scoreData').value = '0';
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
     } else {
       alertEl.classList.remove('show');
+      hasKoInput.value = '0';
+      updateScore();
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor = 'pointer';
     }
   }
 

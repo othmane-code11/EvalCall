@@ -277,13 +277,13 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 7px;
-    border-radius: 5px;
-    font-size: 10.5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.5px;
   }
-  .ko-yes { background: rgba(139,0,0,0.1); color: var(--walnut); border: 1px solid rgba(139,0,0,0.2); }
+  .ko-yes { background: linear-gradient(135deg, rgba(139,0,0,0.12), rgba(192,21,42,0.08)); color: #8B0000; border: 1.5px solid rgba(139,0,0,0.25); box-shadow: 0 0 0 2px rgba(139,0,0,0.04); }
   .ko-no  { background: rgba(122,140,114,0.1); color: #4a6b42; border: 1px solid rgba(122,140,114,0.18); }
 
   /* ─── Compact icon-button group for table actions ─── */
@@ -775,9 +775,7 @@
                 <button class="icon-btn" title="View signature" onclick='showSignature({{ json_encode($ev['signature']) }}, {{ json_encode($ev['name']) }})'>
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 </button>
-                <button class="icon-btn" title="Edit" {{ $ev['status'] === 'signed' ? 'disabled style=opacity:0.4;cursor:not-allowed;' : '' }}>
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                </button>
+
                 <button class="icon-btn" title="Audio" onclick="playAudio('{{ asset('storage/' . $ev['audio']) }}')">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
                 </button>
