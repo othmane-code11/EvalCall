@@ -22,12 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/evaluations/create',[AuthController::class,'evaluationsCreate'])->name('evaluations.create');
     Route::post('/evaluations',[AuthController::class,'storeEvaluation'])->name('evaluations.store');
     Route::get('/export', [AuthController::class, 'export'])->name('export');
+    Route::get('/settings', [AuthController::class, 'settings'])->name('settings');
+    Route::post('/settings', [AuthController::class, 'updateSettings'])->name('settings.update');
+    Route::post('/settings/password', [AuthController::class, 'updatePassword'])->name('settings.password.update');
 });
-
-route::get('/settings', function () {
-    return view('settings');
-})->name('settings');
-
 
 route::get('/reports', function () {
     return view('reports');

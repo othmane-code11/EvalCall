@@ -240,12 +240,20 @@
 
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-section tab-pane active" id="profileTab">
-      <div class="section-header"><h2>Profile information</h2><p>Update your personal details and avatar preferences</p></div>
+      <div class="section-header"><h2>Profile information</h2><p>Update your personal details. Email is unique and cannot be changed here.</p></div>
       <div class="settings-form">
-        <div class="form-row"><div class="form-group"><label>Full name</label><input type="text" id="fullName" value="Karim Mansouri" placeholder="Full name"></div><div class="form-group"><label>Email address</label><input type="email" id="email" value="karim.mansouri@kiteacall.com"></div></div>
-        <div class="form-row"><div class="form-group"><label>Role / Title</label><input type="text" id="role" value="Senior Performance Manager"></div><div class="form-group"><label>Department</label><input type="text" id="dept" value="Quality & Evaluation"></div></div>
-        <div class="form-row"><div class="form-group"><label>Bio</label><textarea rows="3" placeholder="Short bio...">Leading evaluation strategies and team performance insights.</textarea></div></div>
-        <button class="btn-primary" id="saveProfileBtn">Save changes</button>
+        @if(session('success'))
+          <div style="margin-bottom:16px;padding:14px 18px;border-radius:12px;background:#E7F7EE;color:#0B6B34;">{{ session('success') }}</div>
+        @endif
+        @if($errors->has('name'))
+          <div style="margin-bottom:16px;padding:14px 18px;border-radius:12px;background:#FDECEA;color:#9C2E2E;">{{ $errors->first('name') }}</div>
+        @endif
+        <form action="{{ route('settings.update') }}" method="POST">
+          @csrf
+          <div class="form-row"><div class="form-group"><label>Full name</label><input type="text" name="name" id="fullName" value="{{ old('name', $user->name) }}" placeholder="Full name"></div><div class="form-group"><label>Email address</label><input type="email" id="email" value="{{ $user->email }}" disabled></div></div>
+          <div class="form-row"><div class="form-group"><label>Role / Title</label><input type="text" id="role" value="{{ ucfirst($user->role) }}" disabled></div><div class="form-group"><label>Department</label><input type="text" id="dept" value="Quality & Evaluation"></div></div>
+          <button type="submit" class="btn-primary">Save changes</button>
+        </form>
       </div>
     </div>
 
@@ -269,11 +277,24 @@
     </div>
 
     <div class="settings-section tab-pane" id="securityTab" style="display:none">
-      <div class="section-header"><h2>Security & sessions</h2><p>Update password and active sessions</p></div>
+      <div class="section-header"><h2>Security & sessions</h2><p>Update your password and protect your account.</p></div>
       <div class="settings-form">
-        <div class="form-group"><label>Current password</label><input type="password" placeholder="******"></div>
-        <div class="form-row"><div class="form-group"><label>New password</label><input type="password" placeholder="New password"></div><div class="form-group"><label>Confirm password</label><input type="password" placeholder="Confirm"></div></div>
-        <button class="btn-primary">Update password</button>
+        @if(session('success_password'))
+          <div style="margin-bottom:16px;padding:14px 18px;border-radius:12px;background:#E7F7EE;color:#0B6B34;">{{ session('success_password') }}</div>
+        @endif
+        @if($errors->has('current_password'))
+          <div style="margin-bottom:16px;padding:14px 18px;border-radius:12px;background:#FDECEA;color:#9C2E2E;">{{ $errors->first('current_password') }}</div>
+        @endif
+        @if($errors->has('new_password'))
+          <div style="margin-bottom:16px;padding:14px 18px;border-radius:12px;background:#FDECEA;color:#9C2E2E;">{{ $errors->first('new_password') }}</div>
+        @endif
+        <form action="{{ route('settings.password.update') }}" method="POST">
+          @csrf
+          <div class="form-group"><label>Current password</label><input type="password" name="current_password" id="currentPassword" placeholder="Enter current password"></div>
+          <div class="form-row"><div class="form-group"><label>New password</label><input type="password" name="new_password" id="newPassword" placeholder="New password"></div><div class="form-group"><label>Confirm password</label><input type="password" name="new_password_confirmation" id="confirmPassword" placeholder="Confirm new password"></div></div>
+          <div id="passwordHelp" style="font-size:13px;color:#9C7078;margin-bottom:16px;">Enter your current password and choose a new one to enable update.</div>
+          <button type="submit" class="btn-primary" id="updatePasswordBtn" disabled>Update password</button>
+        </form>
         <hr>
         <div class="danger-zone" style="padding:16px 0"><div class="toggle-label">Two-factor authentication</div><div class="toggle-desc">Add an extra layer of security</div><button class="btn-secondary" style="margin-top:12px">Enable 2FA</button></div>
       </div>
@@ -335,6 +356,43 @@
   document.getElementById('saveNotifBtn')?.addEventListener('click', () => { showToast('Notification preferences updated.'); });
   document.getElementById('saveAppearanceBtn')?.addEventListener('click', () => { showToast('Appearance settings applied.'); });
   document.getElementById('saveTeamBtn')?.addEventListener('click', () => { showToast('Team preferences saved.'); });
+
+  const currentPassword = document.getElementById('currentPassword');
+  const newPassword = document.getElementById('newPassword');
+  const confirmPassword = document.getElementById('confirmPassword');
+  const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+  const passwordHelp = document.getElementById('passwordHelp');
+
+  function validatePasswordSection() {
+    const current = currentPassword?.value.trim();
+    const next = newPassword?.value.trim();
+    const confirm = confirmPassword?.value.trim();
+    const ready = current && next && confirm && next === confirm;
+
+    if (updatePasswordBtn) {
+      updatePasswordBtn.disabled = !ready;
+    }
+
+    if (!current) {
+      passwordHelp.textContent = 'Enter your current password to begin.';
+    } else if (!next || !confirm) {
+      passwordHelp.textContent = 'Choose a new password and confirm it.';
+    } else if (next !== confirm) {
+      passwordHelp.textContent = 'Passwords do not match.';
+    } else {
+      passwordHelp.textContent = 'Passwords match. Click update to save your new password.';
+    }
+  }
+
+  [currentPassword, newPassword, confirmPassword].forEach(input => {
+    input?.addEventListener('input', validatePasswordSection);
+  });
+
+  updatePasswordBtn?.addEventListener('click', () => {
+    if (!updatePasswordBtn.disabled) {
+      // allow natural form submission to handle password change
+    }
+  });
 
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', function(e) {
