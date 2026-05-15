@@ -947,9 +947,9 @@
       }
     })
     .then(data => {
-      // Success - redirect to dashboard
+      // Success - redirect to the correct page for the user role
       if (data.success) {
-        window.location.href = '/dashboard';
+        window.location.href = data.redirect_url || '/dashboard';
       }
     })
     .catch(error => {

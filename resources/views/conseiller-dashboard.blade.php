@@ -7,7 +7,7 @@
 
 @section('title', 'My Dashboard — KiteaCall')
 @section('topbar_title', 'My Performance')
-@section('topbar_subtitle', 'Welcome back, Imane · Wednesday, 6 May 2026')
+@section('topbar_subtitle', 'Welcome back, {{ auth()->user()->name }} · Wednesday, 6 May 2026')
 
 @section('content')
 
@@ -1211,7 +1211,7 @@
         </svg>
       </div>
     </div>
-    <div class="kpi-value">{{ $totalEvals ?? 24 }}</div>
+    <div class="kpi-value">{{ $totalEvaluations ?? 24 }}</div>
     <div class="kpi-meta">
       <span class="kpi-delta up">▲ 4</span>
       <span>this month</span>
@@ -1228,7 +1228,7 @@
         </svg>
       </div>
     </div>
-    <div class="kpi-value">{{ number_format($avgScore ?? 86.4, 1) }}<span style="font-size:18px;color:var(--text-muted);font-weight:500;">/100</span></div>
+    <div class="kpi-value">{{ number_format($averageScore ?? 86.4, 1) }}<span style="font-size:18px;color:var(--text-muted);font-weight:500;">/100</span></div>
     <div class="kpi-meta">
       <span class="kpi-delta up">▲ 3.2 pts</span>
       <span>vs. last month</span>
@@ -1247,7 +1247,7 @@
     </div>
     <div class="kpi-value">{{ $signedCount ?? 19 }}</div>
     <div class="kpi-meta">
-      <span class="kpi-delta up">{{ round((($signedCount ?? 19) / ($totalEvals ?? 24)) * 100) }}%</span>
+      <span class="kpi-delta up">{{ $totalEvaluations > 0 ? round((($signedCount ?? 19) / $totalEvaluations) * 100) : 0 }}%</span>
       <span>completion rate</span>
     </div>
   </div>
@@ -1447,16 +1447,7 @@
       </thead>
       <tbody>
         @php
-          $myEvals = $myEvals ?? [
-            ['id' => 'EV-1247', 'date' => '6 May 2026', 'type' => 'incoming', 'score' => 92, 'ko' => false, 'status' => 'completed', 'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1238', 'date' => '4 May 2026', 'type' => 'incoming', 'score' => 88, 'ko' => false, 'status' => 'completed', 'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1229', 'date' => '2 May 2026', 'type' => 'outgoing', 'score' => 85, 'ko' => false, 'status' => 'signed',    'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1218', 'date' => '29 Apr 2026','type' => 'incoming', 'score' => 90, 'ko' => false, 'status' => 'signed',    'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1207', 'date' => '26 Apr 2026','type' => 'outgoing', 'score' => 71, 'ko' => true,  'status' => 'signed',    'manager' => 'Sarah Bennis',   'mgr_init' => 'SB'],
-            ['id' => 'EV-1198', 'date' => '23 Apr 2026','type' => 'incoming', 'score' => 87, 'ko' => false, 'status' => 'signed',    'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1185', 'date' => '20 Apr 2026','type' => 'incoming', 'score' => 84, 'ko' => false, 'status' => 'signed',    'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-            ['id' => 'EV-1176', 'date' => '17 Apr 2026','type' => 'outgoing', 'score' => 79, 'ko' => false, 'status' => 'draft',     'manager' => 'Karim Mansouri', 'mgr_init' => 'KM'],
-          ];
+          $myEvals = $recentEvaluations ?? [];
         @endphp
 
         @foreach($myEvals as $i => $ev)

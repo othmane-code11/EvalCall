@@ -13,8 +13,28 @@ class AuthController extends Controller
 {
     public function Showlogin()
     {
+        if (Auth::check()) {
+            return redirect()->route($this->dashboardRouteFor(Auth::user()->role));
+        }
+
         return view('login');
     }
+
+    private function dashboardRouteFor(?string $role): string
+    {
+        $role = trim(strtolower($role ?? ''));
+
+        if ($role === 'admin' || $role === 'manager') {
+            return 'dashboard';
+        }
+
+        if ($role === 'conseiller') {
+            return 'conseiller.dashboard';
+        }
+
+        return 'login.page';
+    }
+
     public function dashboard()
     {
         $totalEvaluations = Evaluation::count();
@@ -143,6 +163,77 @@ class AuthController extends Controller
             'outgoingPercent',
             'evaluations',
             'alerts'
+        ));
+    }
+
+    public function conseillerDashboard()
+    {
+        $user = Auth::user();
+        
+        // Get conseiller's own evaluations
+        $totalEvaluations = $user->evaluations()->count();
+        $evaluationsThisMonth = $user->evaluations()->whereYear('date', now()->year)->whereMonth('date', now()->month)->count();
+        $evaluationsThisWeek = $user->evaluations()->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $averageScore = $user->evaluations()->whereNotNull('score')->avg('score');
+        $averageScore = $averageScore ? round($averageScore, 1) : 0;
+
+        $incomingCount = $user->evaluations()->where('type', 'entrant')->count();
+        $outgoingCount = $user->evaluations()->where('type', 'sortant')->count();
+        $incomingPercent = $totalEvaluations ? round($incomingCount / $totalEvaluations * 100) : 0;
+        $outgoingPercent = $totalEvaluations ? round($outgoingCount / $totalEvaluations * 100) : 0;
+
+        $koCount = $user->evaluations()->where('has_ko', true)->count();
+        $koPercent = $totalEvaluations ? round($koCount / $totalEvaluations * 100, 1) : 0;
+
+        $signedCount = $user->evaluations()->where('status', 'signed')->count();
+        $pendingSigCount = $user->evaluations()->where('status', 'completed')->count();
+
+        $recentEvaluations = $user->evaluations()
+            ->with('manager')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get()
+            ->map(function ($ev) {
+                $score = $ev->score ?? 0;
+                $avatar = $score >= 85
+                    ? 'linear-gradient(135deg,#F5A623,#F7BC54)'
+                    : ($score >= 75
+                        ? 'linear-gradient(135deg,#8B0000,#C0152A)'
+                        : 'linear-gradient(135deg,#8B0000,#6B3040)');
+
+                $managerName = $ev->manager->name ?? 'Unknown';
+                $mgrInit = collect(explode(' ', $managerName))
+                    ->filter()
+                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                    ->join('');
+
+                return [
+                    'id' => 'EV-'.$ev->id,
+                    'type' => $ev->type === 'entrant' ? 'incoming' : 'outgoing',
+                    'date' => optional($ev->date)->format('j M Y, H:i') ?? $ev->created_at->format('j M Y, H:i'),
+                    'score' => $score,
+                    'ko' => $ev->has_ko,
+                    'status' => $ev->status,
+                    'audio' => $ev->audio,
+                    'signature' => $ev->signature,
+                    'avatar' => $avatar,
+                    'manager' => $managerName,
+                    'mgr_init' => $mgrInit,
+                ];
+            });
+
+        return view('conseiller-dashboard', compact(
+            'totalEvaluations',
+            'evaluationsThisMonth',
+            'evaluationsThisWeek',
+            'averageScore',
+            'incomingPercent',
+            'outgoingPercent',
+            'koCount',
+            'koPercent',
+            'signedCount',
+            'pendingSigCount',
+            'recentEvaluations'
         ));
     }
 
@@ -460,20 +551,31 @@ class AuthController extends Controller
     if ($user && Hash::check($request->password, $user->password)) {
         Auth::login($user);
         
-        // Check if it's an AJAX request
+        // Determine redirect target based on role
+        $route = $this->dashboardRouteFor($user->role);
+        $redirectUrl = $route === 'login.page'
+            ? route('login.page')
+            : route($route);
+
         if ($request->wantsJson()) {
             $token = $user->createToken('auth_token')->plainTextToken;
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
+                'redirect_url' => $redirectUrl,
                 'data' => [
                     'user' => $user,
                     'token' => $token
                 ]
             ]);
         }
-        
-        return redirect()->route('dashboard');
+
+        if ($route === 'login.page') {
+            Auth::logout();
+            return redirect()->back()->withInput($request->only('email'))->with('error', 'Your account role is not recognized.');
+        }
+
+        return redirect()->route($route);
      }
      
      // Check if it's an AJAX request
@@ -487,7 +589,7 @@ class AuthController extends Controller
         ], 401);
      }
      
-     return redirect()->route('dashboard')->with('error', 'Invalid email or password');
+     return redirect()->back()->withInput($request->only('email'))->with('error', 'Invalid email or password');
     }
     public function deleteUser($id)
     {
