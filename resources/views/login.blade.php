@@ -100,23 +100,30 @@
     align-items: center;
     gap: 12px;
     animation: fadeUp 0.6s ease both;
+    margin-bottom: 8px;
   }
 
   .logo-mark {
-    width: 40px;
-    height: 40px;
-    background: var(--gold);
-    border-radius: 10px;
+    width: auto;
+    height: 70px;
+    background: transparent;
+    border-radius: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex-shrink: 0;
+    filter: drop-shadow(0 4px 12px rgba(26, 58, 82, 0.15));
   }
 
   .logo-mark svg {
-    width: 22px;
-    height: 22px;
-    fill: var(--walnut);
+    width: auto;
+    height: 100%;
+    max-height: 70px;
+  }
+
+  .logo-mark text {
+    font-kerning: auto;
+    font-variant-numeric: tabular-nums;
   }
 
   .logo-text {
@@ -124,6 +131,7 @@
     font-size: 22px;
     color: var(--cream);
     letter-spacing: 0.02em;
+    display: none;
   }
 
   .brand-center {
@@ -702,10 +710,12 @@
       <line x1="160" y1="5" x2="160" y2="315" stroke="white" stroke-width="0.5"/>
     </svg>
 
-    <!-- Logo -->
+    <!-- Modern Professional KITEACALL Logo -->
     <div class="brand-logo">
-     
-      <span class="logo-text">KiteaCall</span>
+      <svg class="logo-mark" viewBox="0 0 340 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <text x="0" y="55" font-family="Arial, sans-serif" font-size="52" font-weight="700" fill="white" letter-spacing="0">KITEACALL</text>
+  <line x1="0" y1="68" x2="305" y2="68" stroke="#F5A623" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+</svg>
     </div>
 
     <!-- Center content -->
