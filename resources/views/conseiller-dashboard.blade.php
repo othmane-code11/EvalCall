@@ -7,13 +7,12 @@
 
 @section('title', 'My Dashboard — KiteaCall')
 @section('topbar_title', 'My Performance')
-@section('topbar_subtitle', 'Welcome back, {{ auth()->user()->name }} · Wednesday, 6 May 2026')
-
+@section('topbar_subtitle', 'Welcome back,')
 @section('content')
 
 {{-- ═══════════════════════════════════════════════════════════
      PAGE-SPECIFIC STYLES
-═══════════════════════════════════════════════════════════ --}}
+══════════════════════════════════════════════════════════════ --}}
 <style>
   /* ─── Welcome / pending signature banner ─── */
   .welcome-banner {

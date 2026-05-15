@@ -28,3 +28,5 @@ Route::middleware('auth')->group(function () {
 route::get('/reports', function () {
     return view('reports');
 })->middleware(['auth', 'role:admin,manager'])->name('reports');
+
+
