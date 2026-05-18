@@ -272,20 +272,6 @@
   .insight-tile.accent-gold   { background: linear-gradient(135deg, var(--cream-deep), #fff5e8); }
   .insight-tile.accent-sage   { background: linear-gradient(135deg, #f0f5ee, var(--cream)); }
 
-
-  /* call-type pill */
-  .call-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 6px;
-  }
-  .call-in  { background: rgba(122,140,114,0.1); color: #4a6b42; }
-  .call-out { background: rgba(192,21,42,0.08); color: var(--walnut-mid); }
-
   /* responsive tweaks */
   @media (max-width: 1100px) {
     .quick-actions { grid-template-columns: repeat(2, 1fr); }
@@ -589,10 +575,10 @@
   <input type="date" name="date_from" class="filter-input" value="{{ request('date_from') }}" placeholder="From">
   <input type="date" name="date_to"   class="filter-input" value="{{ request('date_to') }}"   placeholder="To">
 
-  <select name="conseiller" class="filter-select">
+  <select name="conseiller_id" class="filter-select">
     <option value="">All conseillers</option>
     @foreach(($conseillers ?? []) as $c)
-      <option value="{{ $c['initials'] }}" {{ request('conseiller') == $c['initials'] ? 'selected' : '' }}>
+      <option value="{{ $c['id'] }}" {{ request('conseiller_id') == $c['id'] ? 'selected' : '' }}>
         {{ $c['name'] }}
       </option>
     @endforeach
@@ -619,6 +605,14 @@
 
   <a href="{{ url('/dashboard') }}" class="filter-clear">Clear filters</a>
 </form>
+
+<script>
+  document.querySelectorAll('#filtersForm select, #filtersForm input[type="date"]').forEach(el => {
+    el.addEventListener('change', () => {
+      document.getElementById('filtersForm').submit();
+    });
+  });
+</script>
 
 {{-- ═══════════════════════════════════════════════════════════
      3. LATEST EVALUATIONS TABLE
@@ -709,9 +703,6 @@
 
                 <button class="icon-btn" title="Audio" onclick="playAudio('{{ asset('storage/' . $ev['audio']) }}')">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                </button>
-                <button class="icon-btn" title="Download report">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 </button>
               </div>
             </td>

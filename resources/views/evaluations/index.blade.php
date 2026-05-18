@@ -77,6 +77,55 @@
     <a href="{{ url('/evaluations/create') }}" class="sig-btn sig-btn-primary">Create evaluation</a>
   </div>
 
+  <form method="GET" action="{{ url('/evaluations') }}" class="filters-bar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;align-items:end;">
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">From</label>
+      <input type="date" name="date_from" value="{{ request('date_from') }}" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);" />
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">To</label>
+      <input type="date" name="date_to" value="{{ request('date_to') }}" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);" />
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Conseiller</label>
+      <select name="conseiller_id" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
+        <option value="">All conseillers</option>
+        @foreach($conseillers as $conseiller)
+          <option value="{{ $conseiller->id }}" {{ request('conseiller_id') == $conseiller->id ? 'selected' : '' }}>{{ $conseiller->name }}</option>
+        @endforeach
+      </select>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Call type</label>
+      <select name="call_type" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
+        <option value="">All call types</option>
+        <option value="incoming" {{ request('call_type') == 'incoming' ? 'selected' : '' }}>Incoming</option>
+        <option value="outgoing" {{ request('call_type') == 'outgoing' ? 'selected' : '' }}>Outgoing</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">Status</label>
+      <select name="status" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
+        <option value="">All statuses</option>
+        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+        <option value="signed" {{ request('status') == 'signed' ? 'selected' : '' }}>Signed</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:6px;">KO</label>
+      <select name="ko" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
+        <option value="">KO: any</option>
+        <option value="with" {{ request('ko') == 'with' ? 'selected' : '' }}>With KO</option>
+        <option value="without" {{ request('ko') == 'without' ? 'selected' : '' }}>Without KO</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button type="submit" class="sig-btn sig-btn-primary" style="width:100%;padding:10px 16px;">Apply</button>
+      <a href="{{ url('/evaluations') }}" class="sig-btn" style="width:100%;padding:10px 16px;background:#f3f3f3;color:#333;border-radius:10px;text-align:center;">Clear</a>
+    </div>
+  </form>
+
   <div class="card eval-card" style="padding:0;overflow:hidden;">
     <div class="table-wrap" style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;min-width:900px;">
@@ -110,13 +159,13 @@
                   </div>
                 </div>
               </td>
-              <td style="padding:14px 16px;">
+              <td>
                 @if($ev['type'] === 'incoming')
-                  <span class="call-pill call-in">↓ Incoming</span>
+                    <span class="call-pill call-in">↓ Incoming</span>
                 @else
-                  <span class="call-pill call-out">↑ Outgoing</span>
+                    <span class="call-pill call-out">↑ Outgoing</span>
                 @endif
-              </td>
+            </td>
               <td style="padding:14px 16px;">{{ $ev['date'] }}</td>
               <td>
               <div class="score-cell">
@@ -136,9 +185,6 @@
 
                 <button class="icon-btn" title="Audio" onclick="playAudio('{{ asset('storage/' . $ev['audio']) }}')">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                </button>
-                <button class="icon-btn" title="Download report">
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 </button>
               </div>
             </td>

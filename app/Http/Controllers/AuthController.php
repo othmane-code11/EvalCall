@@ -6,6 +6,7 @@ use App\Models\Evaluation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,7 +36,7 @@ class AuthController extends Controller
         return 'login.page';
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $totalEvaluations = Evaluation::count();
         $evaluationsThisMonth = Evaluation::whereYear('date', now()->year)->whereMonth('date', now()->month)->count();
@@ -71,6 +72,7 @@ class AuthController extends Controller
                         : 'linear-gradient(135deg,#C0152A,#6B3040)');
 
                 return [
+                    'id' => $cons->id,
                     'name' => $cons->name,
                     'initials' => $initials,
                     'score' => $score,
@@ -82,8 +84,39 @@ class AuthController extends Controller
         $topPerformer = $conseillers->sortByDesc('score')->first() ?? ['name' => '-', 'score' => 0, 'evals' => 0];
         $lowPerformer = $conseillers->sortBy('score')->first() ?? ['name' => '-', 'score' => 0, 'evals' => 0];
 
-        $evaluations = Evaluation::with('conseiller')
-            ->orderByDesc('created_at')
+        $evaluationsQuery = Evaluation::with('conseiller')
+            ->orderByDesc('created_at');
+
+        if ($request->filled('date_from')) {
+            $evaluationsQuery->whereDate('date', '>=', Carbon::parse($request->input('date_from')));
+        }
+
+        if ($request->filled('date_to')) {
+            $evaluationsQuery->whereDate('date', '<=', Carbon::parse($request->input('date_to')));
+        }
+
+        if ($request->filled('conseiller_id')) {
+            $evaluationsQuery->where('conseiller_id', $request->input('conseiller_id'));
+        }
+
+        if ($request->filled('call_type')) {
+            $type = $request->input('call_type') === 'incoming' ? 'entrant' : 'sortant';
+            $evaluationsQuery->where('type', $type);
+        }
+
+        if ($request->filled('status')) {
+            $evaluationsQuery->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('ko')) {
+            if ($request->input('ko') === 'with') {
+                $evaluationsQuery->where('has_ko', true);
+            } elseif ($request->input('ko') === 'without') {
+                $evaluationsQuery->where('has_ko', false);
+            }
+        }
+
+        $evaluations = $evaluationsQuery
             ->take(8)
             ->get()
             ->map(function ($ev) {
@@ -464,11 +497,46 @@ class AuthController extends Controller
 
     public function evaluations(Request $request)
     {
-        $evaluations = Evaluation::with('conseiller')
-            ->orderByDesc('created_at')
-            ->paginate(8);
+        $conseillers = $this->getConseillers();
 
-        $evaluations->getCollection()->transform(function ($ev) {
+        $evaluationsQuery = Evaluation::with('conseiller')
+            ->orderByDesc('created_at');
+
+        if ($request->filled('date_from')) {
+            $evaluationsQuery->whereDate('date', '>=', Carbon::parse($request->input('date_from')));
+        }
+
+        if ($request->filled('date_to')) {
+            $evaluationsQuery->whereDate('date', '<=', Carbon::parse($request->input('date_to')));
+        }
+
+        if ($request->filled('conseiller_id')) {
+            $evaluationsQuery->where('conseiller_id', $request->input('conseiller_id'));
+        }
+
+        if ($request->filled('call_type')) {
+            $type = $request->input('call_type') === 'incoming' ? 'entrant' : 'sortant';
+            $evaluationsQuery->where('type', $type);
+        }
+
+        if ($request->filled('status')) {
+            $evaluationsQuery->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('ko')) {
+            if ($request->input('ko') === 'with') {
+                $evaluationsQuery->where('has_ko', true);
+            } elseif ($request->input('ko') === 'without') {
+                $evaluationsQuery->where('has_ko', false);
+            }
+        }
+
+        /** @var LengthAwarePaginator $evaluations */
+        $evaluations = $evaluationsQuery
+            ->paginate(8)
+            ->appends($request->query());
+
+        $evaluations->setCollection($evaluations->getCollection()->map(function ($ev) {
             $name = $ev->conseiller->name ?? 'Unknown';
             $initials = collect(explode(' ', $name))
                 ->filter()
@@ -494,9 +562,9 @@ class AuthController extends Controller
                 'audio' => $ev->audio,
                 'signature' => $ev->signature,
             ];
-        });
+        }));
 
-        return view('evaluations.index', compact('evaluations'));
+        return view('evaluations.index', compact('evaluations', 'conseillers'));
     }
 
     public function evaluationsCreate()

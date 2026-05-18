@@ -56,6 +56,19 @@
   .ko-yes { background: linear-gradient(135deg, rgba(139,0,0,0.12), rgba(192,21,42,0.08)); color: #8B0000; border: 1.5px solid rgba(139,0,0,0.25); box-shadow: 0 0 0 2px rgba(139,0,0,0.04); }
   .ko-no  { background: rgba(122,140,114,0.1); color: #4a6b42; border: 1px solid rgba(122,140,114,0.18); }
 
+  /* call-type pill */
+  .call-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .call-in  { background: rgba(122,140,114,0.1); color: #4a6b42; }
+  .call-out { background: rgba(192,21,42,0.08); color: var(--walnut-mid); }
+
   /* ─── Compact icon-button group for table actions ─── */
   .icon-actions {
     display: inline-flex;
