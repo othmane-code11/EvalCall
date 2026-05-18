@@ -261,16 +261,7 @@ php artisan serve
 
 ---
 
-# 📷 Captures d’écran
 
-Ajouter ici les captures d’écran du projet :
-
-* Dashboard Manager
-* Dashboard Conseiller
-* Page d’évaluation
-* Reporting
-
----
 
 # 👨‍💻 Auteur
 
