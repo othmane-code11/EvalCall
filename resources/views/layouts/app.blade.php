@@ -7,6 +7,79 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* ─── Audio Modal ─── */
+  .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-content {
+    background: var(--white);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+  }
+  .close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+  .close:hover { color: var(--walnut); }
+  #audioPlayer {
+    width: 100%;
+    margin-top: 16px;
+  }
+  /* ─── KO flag chip ─── */
+  .ko-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .ko-yes { background: linear-gradient(135deg, rgba(139,0,0,0.12), rgba(192,21,42,0.08)); color: #8B0000; border: 1.5px solid rgba(139,0,0,0.25); box-shadow: 0 0 0 2px rgba(139,0,0,0.04); }
+  .ko-no  { background: rgba(122,140,114,0.1); color: #4a6b42; border: 1px solid rgba(122,140,114,0.18); }
+
+  /* ─── Compact icon-button group for table actions ─── */
+  .icon-actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    border: 1px solid rgba(139,0,0,0.1);
+    background: var(--cream);
+    color: var(--text-mid);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .icon-btn svg { width: 13px; height: 13px; }
+  .icon-btn:hover {
+    background: var(--walnut-mid);
+    color: #fff;
+    border-color: var(--walnut-mid);
+    transform: translateY(-1px);
+  }
   :root {
     --walnut:       #8B0000;
     --walnut-mid:   #C0152A;
@@ -1232,6 +1305,106 @@
     });
     circle.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
   });
+  // Trend chart tooltip
+  (function() {
+    const wrap = document.getElementById('trendChartWrap');
+    const tip  = document.getElementById('trendTip');
+    const dots = document.querySelectorAll('#trendChart .trend-dot');
+    const svg  = document.getElementById('trendChart');
+
+    dots.forEach(dot => {
+      dot.style.cursor = 'pointer';
+      dot.style.transition = 'r 0.2s, fill 0.2s';
+
+      dot.addEventListener('mouseenter', function() {
+        const wrapRect = wrap.getBoundingClientRect();
+        const svgRect  = svg.getBoundingClientRect();
+        const cx = parseFloat(dot.getAttribute('cx'));
+        const cy = parseFloat(dot.getAttribute('cy'));
+        const x = (cx / 600) * svgRect.width;
+        const y = (cy / 200) * svgRect.height;
+
+        tip.textContent = dot.getAttribute('data-label');
+        tip.style.left = (x - 50) + 'px';
+        tip.style.top  = (y - 36) + 'px';
+        tip.classList.add('show');
+
+        dot.setAttribute('r', '6');
+      });
+
+      dot.addEventListener('mouseleave', function() {
+        tip.classList.remove('show');
+        dot.setAttribute('r', dot === dots[dots.length - 1] ? '5' : '4');
+      });
+    });
+  })();
+
+  // Auto-submit filters on change (optional — comment out if you prefer manual submit)
+  document.querySelectorAll('#filtersForm select, #filtersForm input[type="date"]').forEach(el => {
+    el.addEventListener('change', () => {
+      // document.getElementById('filtersForm').submit();
+    });
+  });
+
+  // Animate score bars on load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.cons-bar-fill, .score-bar-fill').forEach(b => {
+        const w = b.style.width;
+        b.style.width = '0';
+        requestAnimationFrame(() => { b.style.width = w; });
+      });
+    }, 150);
+  });
+
+  // Audio modal functions
+  function playAudio(src) {
+    console.log('Playing audio:', src);
+    document.getElementById('audioPlayer').src = src;
+    document.getElementById('audioModal').style.display = 'block';
+  }
+  function closeAudioModal() {
+    document.getElementById('audioModal').style.display = 'none';
+    document.getElementById('audioPlayer').pause();
+  }
+
+  function showSignature(signature, name) {
+    const modal = document.getElementById('signatureModal');
+    const img = document.getElementById('signatureImage');
+    const title = document.getElementById('signatureTitle');
+    const placeholder = document.getElementById('signaturePlaceholder');
+
+    title.textContent = name + ' — Signature';
+    if (!signature) {
+      img.style.display = 'none';
+      placeholder.style.display = 'block';
+      placeholder.textContent = 'No signature available for this evaluation.';
+    } else {
+      img.src = signature;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeSignatureModal() {
+    const modal = document.getElementById('signatureModal');
+    modal.style.display = 'none';
+  }
+
+  // Close modal on outside click
+  window.onclick = function(event) {
+    const audioModal = document.getElementById('audioModal');
+    const signatureModal = document.getElementById('signatureModal');
+    if (event.target == audioModal) {
+      closeAudioModal();
+    }
+    if (event.target == signatureModal) {
+      closeSignatureModal();
+    }
+  }
+
 </script>
 @stack('scripts')
 </body>

@@ -462,10 +462,41 @@ class AuthController extends Controller
         return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
     }
 
-    public function evaluations()
+    public function evaluations(Request $request)
     {
-        $conseillers = $this->getConseillers();
-        return view('evaluations', compact('conseillers'));
+        $evaluations = Evaluation::with('conseiller')
+            ->orderByDesc('created_at')
+            ->paginate(8);
+
+        $evaluations->getCollection()->transform(function ($ev) {
+            $name = $ev->conseiller->name ?? 'Unknown';
+            $initials = collect(explode(' ', $name))
+                ->filter()
+                ->map(fn ($part) => mb_substr($part, 0, 1))
+                ->join('');
+            $score = $ev->score ?? 0;
+            $avatar = $score >= 85
+                ? 'linear-gradient(135deg,#F5A623,#F7BC54)'
+                : ($score >= 75
+                    ? 'linear-gradient(135deg,#8B0000,#C0152A)'
+                    : 'linear-gradient(135deg,#8B0000,#6B3040)');
+
+            return [
+                'id' => 'EV-'.$ev->id,
+                'name' => $name,
+                'initials' => $initials,
+                'avatar' => $avatar,
+                'type' => $ev->type === 'entrant' ? 'incoming' : 'outgoing',
+                'date' => optional($ev->date)->format('j M Y, H:i') ?? $ev->created_at->format('j M Y, H:i'),
+                'score' => $score,
+                'ko' => $ev->has_ko,
+                'status' => $ev->status,
+                'audio' => $ev->audio,
+                'signature' => $ev->signature,
+            ];
+        });
+
+        return view('evaluations.index', compact('evaluations'));
     }
 
     public function evaluationsCreate()
